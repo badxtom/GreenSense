@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GreenSense</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="icon" type="image/png" href="plant.png">
+    <link rel="stylesheet" type="text/css" href="style2.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/1.1.1/chartjs-plugin-zoom.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+            transition: background-color 0.5s ease;
+            position: relative;
+            min-height: 100vh;
+        }
+
+        .topnav {
+            background-color: #04aa2e;
+            overflow: hidden;
+            padding: 10px;
+            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center; /* Alinear elementos verticalmente */
+        }
+
+        .topnav h1 {
+            color: white;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 10px; /* Reducir el margen inferior */
+            color: #333; /* Color del encabezado para modo claro */
+        }
+
+        .icon {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+
+        .value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .unit {
+            font-size: 16px;
+            color: #888;
+        }
+
+        .chart-container {
+            width: 100%;
+            height: 300px;
+            margin-top: 20px;
+        }
+
+    </style>
+</head>
+<body>
+  <!--TOP BAR-->
+  <div class="topnav">
+    <button class="btn btn-outline-success" type="button" id="gobackbutton"><i class="fas fa-arrow-left"></i> Volver</button>
+    <h1>GreenSense Dashboard <i class="fas fa-seedling"></i></h1>
+  </div>
+  <h2 id="msg"></h2>
+  <h2 id="greet"></h2>
+  
+  <div class="container">
+    <h2>Condición del Nivel 3</h2>
+    <div id="dashboard1" class="dashboard">
+        <!-- Contenedor para los gráficos -->
+        <canvas id="temperatureChart" width="400" height="200"></canvas>
+        <canvas id="humidityChart" width="400" height="200"></canvas>
+    </div>
+    <h2>Datos del Suelo</h2>
+    <div id="dashboard2" class="dashboard">
+        <!-- Contenedor para el gráfico -->
+        <canvas id="soilHumidityChart" width="400" height="200"></canvas>
+    </div>
+    <h2>Intensidad de la Luz</h2>
+    <div id="dashboard3" class="dashboard">
+        <!-- Contenedor para el gráfico -->
+        <canvas id="lightChart" width="400" height="200"></canvas>
+    </div>
+</div>
+  
+  <script>
+      let UserCreds = JSON.parse(sessionStorage.getItem("user-creds"));
+      let UserInfo = JSON.parse(sessionStorage.getItem("user-info"));
+
+      let GoBackBtn = document.getElementById('gobackbutton');
+
+      let GoBack = () => {
+        window.history.back();
+      }
+
+      let CheckCred = () => {
+        if(!sessionStorage.getItem("user-creds"))
+        window.location.href = 'login'
+         else{
+
+
+        }
+      }
+
+      window.addEventListener('load', CheckCred);
+      GoBackBtn.addEventListener('click', GoBack);
+
+  </script>
+
+  <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
+        import { getFirestore, collection, query, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+              apiKey: "AIzaSyAtOj7REqncVDvnF4Ltjz--SJRrs-pfOgg",
+              authDomain: "greensense-d1a08.firebaseapp.com",
+              databaseURL:"https://greensense-d1a08-default-rtdb.firebaseio.com",
+              projectId: "greensense-d1a08",
+              storageBucket: "greensense-d1a08.appspot.com",
+              messagingSenderId: "314353204814",
+              appId: "1:314353204814:web:a5c41bf841a1511a69cd1f",
+              measurementId: "G-CK4PCZD6B0"
+            };
+
+
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const db = getFirestore(app);
+
+        // Función para obtener los datos del sensor desde Firebase Firestore
+        async function getSensorData() {
+            try {
+                // Obtener la colección de datos de sensores y ordenar por fecha
+                const sensorDataCollection = collection(db, 'sensors_data');
+                const q = query(sensorDataCollection, orderBy('date'));
+                const querySnapshot = await getDocs(q);
+                
+                // Arrays para almacenar los datos de temperatura y humedad
+                let temperatureData = [];
+                let humidityData = [];
+                let dateLabels = [];
+                
+                // Iterar sobre los documentos y obtener los datos
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    temperatureData.push(data.temperature);
+                    humidityData.push(data.humidity);
+                    dateLabels.push(formatDate(data.date)); // Formatear la fecha
+                });
+                
+                // Llamar a la función para actualizar los gráficos
+                updateCharts(temperatureData, humidityData, dateLabels);
+            } catch (error) {
+                console.error('Error al obtener los datos del sensor:', error);
+            }
+        }
+
+        // Función para formatear la fecha en formato legible
+        function formatDate(timestamp) {
+            const date = timestamp.toDate(); // Convertir el timestamp a objeto de fecha
+            return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}`;
+        }
+
+        // Función para actualizar los gráficos con los datos obtenidos
+        function updateCharts(temperatureData, humidityData, dateLabels) {
+            const temperatureChartCtx = document.getElementById('temperatureChart').getContext('2d');
+            const humidityChartCtx = document.getElementById('humidityChart').getContext('2d');
+
+            const temperatureChart = new Chart(temperatureChartCtx, {
+                type: 'line',
+                data: {
+                    labels: dateLabels,
+                    datasets: [{
+                        label: 'Temperatura (°C)',
+                        data: temperatureData,
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        zoom: {
+                            pan: {
+                                enabled: true,
+                                mode: 'x',
+                                rangeMin: { x: 0 },
+                                rangeMax: { x: null }
+                            },
+                            zoom: {
+                                wheel: {
+                                    enabled: true,
+                                },
+                                pinch: {
+                                    enabled: true
+                                },
+                                mode: 'x',
+                                rangeMin: { x: 0 },
+                                rangeMax: { x: null }
+                            }
+                        }
+                    }
+                }
+            });
+
+            const humidityChart = new Chart(humidityChartCtx, {
+                type: 'line',
+                data: {
+                    labels: dateLabels,
+                    datasets: [{
+                        label: 'Humedad (%)',
+                        data: humidityData,
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        zoom: {
+                            pan: {
+                                enabled: true,
+                                mode: 'x',
+                                rangeMin: { x: 0 },
+                                rangeMax: { x: null }
+                            },
+                            zoom: {
+                                wheel: {
+                                    enabled: true,
+                                },
+                                pinch: {
+                                    enabled: true
+                                },
+                                mode: 'x',
+                                rangeMin: { x: 0 },
+                                rangeMax: { x: null }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Llamar a la función para obtener los datos del sensor inicialmente y cada cierto intervalo de tiempo
+        setInterval(getSensorData, 60000); // Cada 1 minuto
+        window.onload = getSensorData;
+  </script>
+</body>
+</html>

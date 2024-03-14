@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GreenSense</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="icon" type="image/png" href="plant.png">
+    <link rel="stylesheet" type="text/css" href="style2.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/1.1.1/chartjs-plugin-zoom.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+            transition: background-color 0.5s ease;
+            position: relative;
+            min-height: 100vh;
+        }
+
+        .topnav {
+            background-color: #04aa2e;
+            overflow: hidden;
+            padding: 10px;
+            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .topnav h1 {
+            color: white;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .icon {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+
+        .value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .unit {
+            font-size: 16px;
+            color: #888;
+        }
+
+        .chart-container {
+            width: 100%;
+            height: 300px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+  <!--TOP BAR-->
+  <div class="topnav">
+    <button class="btn btn-outline-success" type="button" id="gobackbutton"><i class="fas fa-arrow-left"></i> Volver</button>
+    <h1>GreenSense Dashboard <i class="fas fa-seedling"></i></h1>
+  </div>
+  <h2 id="msg"></h2>
+  <h2 id="greet"></h2>
+  
+  <div class="container">
+    <!-- Agregar elemento de entrada de fecha -->
+    <div>
+        <label for="datePicker">Seleccionar Fecha:</label>
+        <input type="date" id="datePicker">
+        <button id="applyDateBtn">Aplicar</button>
+    </div>
+
+    <h2>Condición del Nivel 1</h2>
+    <div id="dashboard1" class="dashboard">
+        <!-- Contenedor para los gráficos -->
+        <canvas id="temperatureChart" width="400" height="200"></canvas>
+        <canvas id="humidityChart" width="400" height="200"></canvas>
+    </div>
+    <h2>Datos del Suelo</h2>
+    <div id="dashboard2" class="dashboard">
+        <!-- Contenedor para el gráfico -->
+        <canvas id="soilHumidityChart" width="400" height="200"></canvas>
+    </div>
+    <h2>Intensidad de la Luz</h2>
+    <div id="dashboard3" class="dashboard">
+        <!-- Contenedor para el gráfico -->
+        <canvas id="lightChart" width="400" height="200"></canvas>
+    </div>
+  </div>
+  
+  <script type="module">
+      // Import the functions you need from the SDKs you need
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+      import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
+      import { getFirestore, collection, query, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+      const firebaseConfig = {
+            apiKey: "AIzaSyAtOj7REqncVDvnF4Ltjz--SJRrs-pfOgg",
+            authDomain: "greensense-d1a08.firebaseapp.com",
+            databaseURL:"https://greensense-d1a08-default-rtdb.firebaseio.com",
+            projectId: "greensense-d1a08",
+            storageBucket: "greensense-d1a08.appspot.com",
+            messagingSenderId: "314353204814",
+            appId: "1:314353204814:web:a5c41bf841a1511a69cd1f",
+            measurementId: "G-CK4PCZD6B0"
+          };
+
+
+      const app = initializeApp(firebaseConfig);
+      const analytics = getAnalytics(app);
+      const db = getFirestore(app);
+
+      let temperatureChart;
+      let humidityChart;
+      let soilHumidityChart;
+      let lightChart;
+
+      // Función para obtener los datos del sensor desde Firebase Firestore para la fecha seleccionada
+      async function getSensorData(selectedDate) {
+          try {
+              // Obtener la colección de datos de sensores y ordenar por fecha
+              const sensorDataCollection = collection(db, 'sensors_data');
+              const q = query(sensorDataCollection, orderBy('date'));
+              const querySnapshot = await getDocs(q);
+              
+              // Arrays para almacenar los datos de temperatura, humedad del suelo e intensidad de la luz
+              let temperatureData = [];
+              let humidityData = [];
+              let soilHumidityData = [];
+              let lightData = [];
+              let dateLabels = [];
+              
+              // Iterar sobre los documentos y obtener los datos solo para la fecha seleccionada
+              querySnapshot.forEach((doc) => {
+                  const data = doc.data();
+                  // Verificar si la fecha del documento coincide con la fecha seleccionada
+                  if (selectedDate === data.date.toDate().toISOString().split('T')[0]) {
+                      temperatureData.push(data.temperature);
+                      humidityData.push(data.humidity);
+                      soilHumidityData.push(data.moisture);
+                      lightData.push(data.lux);
+                      dateLabels.push(data.date.toDate().toLocaleString());
+                  }
+              });
+              
+              // Llamar a la función para actualizar los gráficos con los datos filtrados
+              updateCharts(temperatureData, humidityData, soilHumidityData, lightData, dateLabels);
+          } catch (error) {
+              console.error('Error al obtener los datos del sensor:', error);
+          }
+      }
+
+      // Función para actualizar los gráficos con los datos obtenidos
+      function updateCharts(temperatureData, humidityData, soilHumidityData, lightData, dateLabels) {
+          if (temperatureChart) {
+              temperatureChart.destroy();
+          }
+          if (humidityChart) {
+              humidityChart.destroy();
+          }
+          if (soilHumidityChart) {
+              soilHumidityChart.destroy();
+          }
+          if (lightChart) {
+              lightChart.destroy();
+          }
+
+          const temperatureChartCtx = document.getElementById('temperatureChart').getContext('2d');
+          const humidityChartCtx = document.getElementById('humidityChart').getContext('2d');
+          const soilHumidityChartCtx = document.getElementById('soilHumidityChart').getContext('2d');
+          const lightChartCtx = document.getElementById('lightChart').getContext('2d');
+
+          temperatureChart = new Chart(temperatureChartCtx, {
+              type: 'line',
+              data: {
+                  labels: dateLabels,
+                  datasets: [{
+                      label: 'Temperatura (°C)',
+                      data: temperatureData,
+                      backgroundColor: 'rgba(255, 0, 0, 0.2)',
+                      borderColor: 'rgba(255, 0, 0, 1)',
+                      borderWidth: 1
+                  }]
+              },
+              options: {
+                  scales: {
+                      y: {
+                          beginAtZero: true
+                      }
+                  },
+                  plugins: {
+                      zoom: {
+                          pan: {
+                              enabled: true,
+                              mode: 'x',
+                              rangeMin: { x: 0 },
+                              rangeMax: { x: null }
+                          },
+                          zoom: {
+                              wheel: {
+                                  enabled: true,
+                              },
+                              pinch: {
+                                  enabled: true
+                              },
+                              mode: 'x',
+                              rangeMin: { x: 0 },
+                              rangeMax: { x: null }
+                          }
+                      }
+                  }
+              }
+          });
+
+          humidityChart = new Chart(humidityChartCtx, {
+              type: 'line',
+              data: {
+                  labels: dateLabels,
+                  datasets: [{
+                      label: 'Humedad (%)',
+                      data: humidityData,
+                      backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                      borderColor: 'rgba(54, 162, 235, 1)',
+                      borderWidth: 1
+                  }]
+              },
+              options: {
+                  scales: {
+                      y: {
+                          beginAtZero: true
+                      }
+                  },
+                  plugins: {
+                      zoom: {
+                          pan: {
+                              enabled: true,
+                              mode: 'x',
+                              rangeMin: { x: 0 },
+                              rangeMax: { x: null }
+                          },
+                          zoom: {
+                              wheel: {
+                                  enabled: true,
+                              },
+                              pinch: {
+                                  enabled: true
+                              },
+                              mode: 'x',
+                              rangeMin: { x: 0 },
+                              rangeMax: { x: null }
+                          }
+                      }
+                  }
+              }
+          });
+
+          soilHumidityChart = new Chart(soilHumidityChartCtx, {
+              type: 'line',
+              data: {
+                  labels: dateLabels,
+                  datasets: [{
+                      label: 'Humedad del Suelo (%)',
+                      data: soilHumidityData,
+                      backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                      borderColor: 'rgba(75, 192, 192, 1)',
+                      borderWidth: 1
+                  }]
+              },
+              options: {
+                  scales: {
+                      y: {
+                          beginAtZero: true
+                      }
+                  },
+                  plugins: {
+                      zoom: {
+                          pan: {
+                              enabled: true,
+                              mode: 'x',
+                              rangeMin: { x: 0 },
+                              rangeMax: { x: null }
+                          },
+                          zoom: {
+                              wheel: {
+                                  enabled: true,
+                              },
+                              pinch: {
+                                  enabled: true
+                              },
+                              mode: 'x',
+                              rangeMin: { x: 0 },
+                              rangeMax: { x: null }
+                          }
+                      }
+                  }
+              }
+          });
+
+          lightChart = new Chart(lightChartCtx, {
+              type: 'line',
+              data: {
+                  labels: dateLabels,
+                  datasets: [{
+                      label: 'Intensidad de Luz',
+                      data: lightData,
+                      backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                      borderColor: 'rgba(255, 206, 86, 1)',
+                      borderWidth: 1
+                  }]
+              },
+              options: {
+                  scales: {
+                      y: {
+                          beginAtZero: true
+                      }
+                  },
+                  plugins: {
+                      zoom: {
+                          pan: {
+                              enabled: true,
+                              mode: 'x',
+                              rangeMin: { x: 0 },
+                              rangeMax: { x: null }
+                          },
+                          zoom: {
+                              wheel: {
+                                  enabled: true,
+                              },
+                              pinch: {
+                                  enabled: true
+                              },
+                              mode: 'x',
+                              rangeMin: { x: 0 },
+                              rangeMax: { x: null }
+                          }
+                      }
+                  }
+              }
+          });
+      }
+
+      // Función para regresar a la página anterior
+      let GoBackBtn = document.getElementById('gobackbutton');
+      let GoBack = () => {
+        window.history.back();
+      }
+      GoBackBtn.addEventListener('click', GoBack);
+
+      // Función para obtener y mostrar los datos del sensor para la fecha seleccionada
+      let ApplyDate = () => {
+        let selectedDate = document.getElementById('datePicker').value;
+        getSensorData(selectedDate);
+      }
+      let ApplyDateBtn = document.getElementById('applyDateBtn');
+      ApplyDateBtn.addEventListener('click', ApplyDate);
+  </script>
+</body>
+</html>

@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GreenSense</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="icon" type="image/png" href="plant.png">
+    <link rel="stylesheet" type="text/css" href="style2.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+            transition: background-color 0.5s ease;
+            position: relative;
+            min-height: 100vh;
+        }
+
+        .topnav {
+            background-color: #04aa2e;
+            overflow: hidden;
+            padding: 10px;
+            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center; /* Alinear elementos verticalmente */
+        }
+
+        .topnav h1 {
+            color: white;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 10px; /* Reducir el margen inferior */
+            color: #333; /* Color del encabezado para modo claro */
+        }
+
+        .icon {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+
+        .value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .unit {
+            font-size: 16px;
+            color: #888;
+        }
+
+        .dashboard {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+
+        .dashboard-item {
+            width: 45%;
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .btn-tendencias {
+            background-color: #1e90ff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .btn-tendencias:hover {
+            background-color: #007bff;
+        }
+        
+    </style>
+</head>
+<body>
+  <!--TOP BAR-->
+  <div class="topnav">
+    <button class="btn btn-outline-success" type="button" id="gobackbutton"><i class="fas fa-arrow-left"></i> Volver</button>
+    <h1>GreenSense Dashboard <i class="fas fa-seedling"></i></h1>
+    <button href="tendenciasn3"class="btn-tendencias" id="verTendenciasButton">Ver tendencias</button>
+  </div>
+  <h2 id="msg"></h2>
+  <h2 id="greet"></h2>
+  
+  <div class="container">
+    <h2>Condición del Nivel 3</h2>
+    <div id="dashboard1" class="dashboard">
+        <div class="dashboard-item">
+            <i class="fas fa-thermometer-half icon" style="color: #FF5733;"></i>
+            <div class="value" id="temperature">--</div>
+            <div class="unit">Temperatura (°C)</div>
+        </div>
+        <div class="dashboard-item">
+            <i class="fas fa-tint icon" style="color: #33AFFF;"></i>
+            <div class="value" id="humidity">--</div>
+            <div class="unit">Humedad (%)</div>
+        </div>
+    </div>
+    <h2>Datos del Suelo</h2>
+    <div id="dashboard2" class="dashboard">
+        <div class="dashboard-item">
+            <i class="fas fa-tint icon" style="color: #33AFFF;"></i>
+            <div class="value" id="humidity1">--</div>
+            <div class="unit">Humedad (%)</div>
+        </div>
+        <div class="dashboard-item">
+            <i class="fas fa-tint icon" style="color: #33AFFF;"></i>
+            <div class="value" id="humidity2">--</div>
+            <div class="unit">Humedad (%)</div>
+        </div>
+        <div class="dashboard-item">
+            <i class="fas fa-tint icon" style="color: #33AFFF;"></i>
+            <div class="value" id="humidity3">--</div>
+            <div class="unit">Humedad (%)</div>
+        </div>
+        <div class="dashboard-item">
+            <i class="fas fa-tint icon" style="color: #33AFFF;"></i>
+            <div class="value" id="humidity4">--</div>
+            <div class="unit">Humedad (%)</div>
+        </div>
+    </div>
+    <h2>Intesidad de la Luz</h2>
+    <div id="dashboard3" class="dashboard">
+        <div class="dashboard-item">
+            <i class="far fa-lightbulb icon" style="color: #FCD404;"></i>
+            <div class="value" id="light">--</div>
+            <div class="unit">Luz (lux)</div>
+        </div>
+    </div>
+</div>
+  
+  <script>
+      let UserCreds = JSON.parse(sessionStorage.getItem("user-creds"));
+      let UserInfo = JSON.parse(sessionStorage.getItem("user-info"));
+
+      let GoBackBtn = document.getElementById('gobackbutton');
+      let VerTendenciasBtn = document.getElementById('verTendenciasButton');
+
+      let GoBack = () => {
+        window.history.back();
+      }
+
+      let VerTendencias = () => {
+        // Aquí puedes agregar la lógica para mostrar las tendencias o redirigir a otra página
+        console.log("Mostrando tendencias...");
+      }
+
+      let CheckCred = () => {
+        if (!sessionStorage.getItem("user-creds")) {
+          window.location.href = 'login';
+        } else {
+          // Puedes agregar más lógica aquí si es necesario
+        }
+      }
+
+      window.addEventListener('load', CheckCred);
+      GoBackBtn.addEventListener('click', GoBack);
+      VerTendenciasBtn.addEventListener('click', VerTendencias);
+
+      VerTendenciasBtn.addEventListener('click', () => {
+        localStorage.setItem('lastVisitedPage', 'tendencian3'); 
+        window.location.href = 'tendenciasn3'; 
+      });
+      
+  </script>
+
+  <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
+        import { getDatabase, get, ref, child  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getFirestore, collection, orderBy, query, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+              apiKey: "AIzaSyAtOj7REqncVDvnF4Ltjz--SJRrs-pfOgg",
+              authDomain: "greensense-d1a08.firebaseapp.com",
+              databaseURL:"https://greensense-d1a08-default-rtdb.firebaseio.com",
+              projectId: "greensense-d1a08",
+              storageBucket: "greensense-d1a08.appspot.com",
+              messagingSenderId: "314353204814",
+              appId: "1:314353204814:web:a5c41bf841a1511a69cd1f",
+              measurementId: "G-CK4PCZD6B0"
+            };
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const db = getFirestore(app);
+
+        // Función para obtener los datos del sensor desde Firestore
+        async function getSensorData() {
+            try {
+                // Obtiene la colección de datos de sensores y ordena por fecha descendente
+                const sensorDataCollection = collection(db, 'sensors_data');
+                const q = query(sensorDataCollection, orderBy('date', 'desc'), limit(1));
+                // Obtiene los documentos de la colección
+                const querySnapshot = await getDocs(q);
+                // Itera sobre los documentos y actualiza los valores en la página HTML
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    // Actualiza los elementos HTML con los valores obtenidos
+                    document.getElementById('temperature').innerText = data.temperature + ' °C';
+                    document.getElementById('humidity').innerText = data.humidity + ' %';
+                    // Puedes agregar más actualizaciones para otros elementos aquí si es necesario
+                });
+            } catch (error) {
+                console.error('Error al obtener los datos del sensor:', error);
+            }
+        }
+        setInterval(getSensorData, 30000);
+        window.onload = getSensorData;
+  </script>
+</body>
+</html>

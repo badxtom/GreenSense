@@ -1,0 +1,55 @@
+{
+  "hosting": {
+    "site": "greensense",
+    "public": "public",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "/info",
+        "destination": "/index.html"
+      },
+      {
+        "source": "/register",
+        "destination": "/register.html"
+      },
+      {
+        "source": "/login",
+        "destination": "/login.html"
+      },
+      {
+        "source": "/home",
+        "destination": "/home.html"
+      },
+      {
+        "source": "/n1",
+        "destination": "/n1.html"
+      },
+      {
+        "source": "/n2",
+        "destination": "/n2.html"
+      },
+      {
+        "source": "/n3",
+        "destination": "/n3.html"
+      },
+      {
+        "source": "/tendenciasn1",
+        "destination": "/tendenciasn1.html"
+      },
+      {
+        "source": "/tendenciasn2",
+        "destination": "/tendenciasn2.html"
+      },
+      {
+        "source": "/tendenciasn3",
+        "destination": "/tendenciasn3.html"
+      }
+      
+    ]
+    
+  }
+}
