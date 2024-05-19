@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +8,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="icon" type="image/png" href="plant.png">
     <link rel="stylesheet" type="text/css" href="style2.css">
+    <script src="https://cdn.jsdelivr.net/npm/openai/dist/openai-browser.min.js"></script>
+
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -25,7 +28,8 @@
             text-align: center;
             display: flex;
             justify-content: space-between;
-            align-items: center; /* Alinear elementos verticalmente */
+            align-items: center;
+
         }
 
         .topnav h1 {
@@ -44,8 +48,10 @@
 
         h2 {
             text-align: center;
-            margin-bottom: 10px; /* Reducir el margen inferior */
-            color: #333; /* Color del encabezado para modo claro */
+            margin-bottom: 10px;
+
+            color: #333;
+
         }
 
         .icon {
@@ -93,204 +99,1522 @@
         .btn-tendencias:hover {
             background-color: #007bff;
         }
-        
+
+        .toggle-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+        }
+
+        .toggle-button {
+            background-color: #ccc;
+            border: none;
+            color: #333;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .toggle-button.selected {
+            background-color: #04aa2e;
+            color: white;
+        }
+
+        .chat-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: white;
+            color: #28a745;
+            border: none;
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+            font-size: 14px;
+            cursor: pointer;
+            z-index: 999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0 12px;
+        }
+
+        .button-icon {
+            width: 70px;
+
+            height: auto;
+
+            margin-right: 5px;
+
+        }
+
+
+        .chat-window {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            width: 300px;
+            height: 400px;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            display: none;
+            z-index: 999;
+            transition: background-color 0.5s ease;
+
+        }
+
+
+        .chat-window.light-mode {
+            background-color: white;
+
+        }
+
+
+        .chat-window.dark-mode {
+            background-color: rgb(41, 39, 39);
+
+        }
+
+
+
+        .chat-float-icon {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background-color: #28a745;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 1000;
+        }
+
+
+        .chat-header {
+            background-color: #28a745;
+
+            color: white;
+            padding: 10px;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+
+        .close-chat-button {
+            background-color: transparent;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+
+        .chat-body {
+            height: calc(100% - 90px);
+            max-height: calc(100% - 90px);
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+
+        .chat-input {
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+
+        .chat-input input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+
+
+        .send-message-button {
+            background-color: #28a745;
+
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+
+        .message {
+            text-align: left;
+            margin-bottom: 10px;
+
+        }
+
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message {
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        body.light-mode {
+            background-color: #f0f0f0;
+            color: #333;
+        }
+
+
+        body.dark-mode {
+            background-color: #333;
+            color: #fff;
+        }
+
+        .container.light-mode {
+            background-color: #fff;
+            color: #333;
+        }
+
+        .container.dark-mode {
+            background-color: #222;
+            color: #fff;
+        }
+
+        h2.light-mode {
+            color: #333;
+        }
+
+        h2.dark-mode {
+            color: #fff;
+        }
+
+        #lastUpdateDate.light-mode {
+            color: #888;
+        }
+
+        #lastUpdateDate.dark-mode {
+            color: #ddd;
+        }
+
+        .value {
+            color: #000;
+
+        }
+
+        .plant-name {
+            color: #000;
+
+        }
+
+        label {
+            color: #000;
+
+        }
+
+        .dashboard-item {
+            margin-bottom: 20px;
+        }
+
+        .clock-input {
+            border: none;
+            border-radius: 10px;
+            padding: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            background-color: #f0f0f0;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .clock-input:focus {
+            outline: none;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .dashboard-item label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .toggle-buttons {
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .toggle-button {
+            background-color: #f1f1f1;
+            border: none;
+            color: #333;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 12px;
+            transition: background-color 0.3s ease;
+        }
+
+        .toggle-button:hover {
+            background-color: #ddd;
+        }
     </style>
+    <script src="env.js"></script>
 </head>
+
 <body>
-  <!--TOP BAR-->
-  <div class="topnav">
-    <button class="btn btn-outline-success" type="button" id="gobackbutton"><i class="fas fa-arrow-left"></i> Volver</button>
-    <h1>GreenSense Dashboard <i class="fas fa-seedling"></i></h1>
-    <button href="tendenciasn1"class="btn-tendencias" id="verTendenciasButton">Ver tendencias</button>
-  </div>
-  <h2 id="msg"></h2>
-  <h2 id="greet"></h2>
-  
-  <div class="container">
-    <h2>Condición del Nivel 1</h2>
-    <div id="dashboard1" class="dashboard">
-        <div class="dashboard-item">
-            <i class="fas fa-thermometer-half icon" style="color: #FF5733;"></i>
-            <div class="value" id="temperature">--</div>
-            <div class="unit">Temperatura (°C)</div>
+    <div class="topnav">
+        <button class="btn btn-outline-success" type="button" id="gobackbutton"><i class="fas fa-arrow-left"></i>
+            Volver</button>
+        <h1>GreenSense Dashboard <i class="fas fa-seedling"></i></h1>
+        <button href="tendenciasn1" class="btn-tendencias" id="verTendenciasButton">Ver tendencias</button>
+    </div>
+    <h2 id="msg"></h2>
+    <h2 id="greet"></h2>
+
+    <div class="container">
+        <h2>Condición del Nivel 1</h2>
+        <div id="dashboard1" class="dashboard">
+            <div class="dashboard-item">
+                <i class="fas fa-thermometer-half icon" style="color: #FF5733;"></i>
+                <div class="value" id="temperature">--</div>
+                <div class="unit">Temperatura (°C)</div>
+            </div>
+            <div class="dashboard-item">
+                <i class="fas fa-tint icon" style="color: #33AFFF;"></i>
+                <div class="value" id="humidity">--</div>
+                <div class="unit">Humedad (%)</div>
+            </div>
         </div>
-        <div class="dashboard-item">
-            <i class="fas fa-tint icon" style="color: #33AFFF;"></i>
-            <div class="value" id="humidity">--</div>
-            <div class="unit">Humedad (%)</div>
+        <h2>Datos del Suelo</h2>
+        <div id="dashboard2" class="dashboard">
+            <div class="dashboard-item">
+                <i class="fas fa-tint icon" style="color: #33AFFF;"></i>
+                <div class="value" id="humidity1">--</div>
+                <div class="unit">Humedad (%)</div>
+                <span id="plantName1" class="plant-name">Nombre de la planta 1</span>
+            </div>
+            <div class="dashboard-item">
+                <i class="fas fa-tint icon" style="color: #33AFFF;"></i>
+                <div class="value" id="humidity2">--</div>
+                <div class="unit">Humedad (%)</div>
+                <span id="plantName2" class="plant-name">Nombre de la planta 2</span>
+            </div>
+            <div class="dashboard-item">
+                <i class="fas fa-tint icon" style="color: #33AFFF;"></i>
+                <div class="value" id="humidity3">--</div>
+                <div class="unit">Humedad (%)</div>
+                <span id="plantName3" class="plant-name">Nombre de la planta 3</span>
+            </div>
+        </div>
+        <h2>Intensidad de la Luz</h2>
+        <div id="dashboard3" class="dashboard">
+            <div class="dashboard-item">
+                <i class="far fa-lightbulb icon" style="color: #FCD404;"></i>
+                <div class="value" id="light">--</div>
+                <div class="unit">Luz (Ω)</div>
+            </div>
+        </div>
+        <h2>Prueba de pH</h2>
+        <div id="dashboard4" class="dashboard">
+            <div class="dashboard-item">
+                <i class="fas fa-flask icon" style="color: #0431fc;"></i>
+                <div class="value" id="ph">--</div>
+                <div class="unit">pH</div>
+            </div>
+        </div>
+        <h2>Programación de Riego</h2>
+        <div class="dashboard">
+            <div class="dashboard-item">
+                <label for="watering-time">Hora de Riego 01:</label>
+                <input type="time" id="watering-time" class="clock-input">
+            </div>
+            <div class="dashboard-item">
+                <label for="watering-time2">Hora de Riego 02:</label>
+                <input type="time" id="watering-time2" class="clock-input">
+            </div>
+            <div class="dashboard-item">
+                <label for="watering-time3">Hora de Riego 03:</label>
+                <input type="time" id="watering-time3" class="clock-input">
+            </div>
+        </div>
+        <div class="dashboard">
+            <div class="dashboard-item">
+                <div><label for="days">Días de riego:</label></div>
+                <div class="toggle-buttons">
+                    <button class="toggle-button" id="lunes">Lunes</button>
+                    <button class="toggle-button" id="martes">Martes</button>
+                    <button class="toggle-button" id="miercoles">Miércoles</button>
+                    <button class="toggle-button" id="jueves">Jueves</button>
+                    <button class="toggle-button" id="viernes">Viernes</button>
+                    <button class="toggle-button" id="sabado">Sábado</button>
+                    <button class="toggle-button" id="domingo">Domingo</button>
+                </div>
+            </div>
+        </div>
+        <div class="dashboard">
+            <button id="save-watering-schedule" class="btn-tendencias">Guardar</button>
+        </div>
+        <h2>Programación de Luz</h2>
+        <div class="dashboard">
+            <div class="dashboard-item">
+                <label for="turn-on-time">Desde:</label>
+                <input type="time" id="turn-on-time" class="clock-input">
+            </div>
+            <div class="dashboard-item">
+                <label for="turn-off-time">Hasta:</label>
+                <input type="time" id="turn-off-time" class="clock-input">
+            </div>
+        </div>
+        <div class="dashboard">
+            <button id="save-light-schedule" class="btn-tendencias">Guardar</button>
+        </div>
+        <div id="lastUpdateDate">Última actualización: --</div>
+    </div>
+    </div>
+    <button id="chatButton" class="chat-button">
+        <img src="img/AIGardener.jpg" alt="Icono de AI Gardener" class="button-icon">
+    </button>
+
+    <div id="chatWindow" class="chat-window">
+        <div id="chatHeader" class="chat-header">
+            <span>AI Gardener</span>
+            <button id="closeChatButton" class="close-chat-button"><i class="fas fa-times"></i></button>
+        </div>
+        <div id="chatBody" class="chat-body">
+        </div>
+        <div id="chatInput" class="chat-input">
+            <input type="text" id="userMessage" placeholder="Escribe tu mensaje...">
+            <button id="sendMessageButton" class="send-message-button">Enviar</button>
         </div>
     </div>
-    <h2>Datos del Suelo</h2>
-    <div id="dashboard2" class="dashboard">
-        <div class="dashboard-item">
-            <i class="fas fa-tint icon" style="color: #33AFFF;"></i>
-            <div class="value" id="humidity1">--</div>
-            <div class="unit">Humedad (%)</div>
-            <span id="plantName1" class="plant-name">Nombre de la planta 1</span>
-        </div>
-        <div class="dashboard-item">
-            <i class="fas fa-tint icon" style="color: #33AFFF;"></i>
-            <div class="value" id="humidity2">--</div>
-            <div class="unit">Humedad (%)</div>
-            <span id="plantName2" class="plant-name">Nombre de la planta 2</span>
-        </div>
-        <div class="dashboard-item">
-            <i class="fas fa-tint icon" style="color: #33AFFF;"></i>
-            <div class="value" id="humidity3">--</div>
-            <div class="unit">Humedad (%)</div>
-            <span id="plantName3" class="plant-name">Nombre de la planta 3</span>
-        </div>
-    </div>
-    <h2>Intensidad de la Luz</h2>
-    <div id="dashboard3" class="dashboard">
-        <div class="dashboard-item">
-            <i class="far fa-lightbulb icon" style="color: #FCD404;"></i>
-            <div class="value" id="light">--</div>
-            <div class="unit">Luz (lux)</div>
-        </div>
-    </div>
-    <h2>Prueba de pH</h2>
-    <div id="dashboard4" class="dashboard">
-        <div class="dashboard-item">
-            <i class="fas fa-flask icon" style="color: #0431fc;"></i>
-            <div class="value" id="ph">--</div>
-            <div class="unit">pH</div>
-        </div>
-    </div>
-    <div id="lastUpdateDate">Última actualización: --</div>
-  </div>
-  
-  <script>
-      // Variables y funciones del navegador
 
-      let GoBackBtn = document.getElementById('gobackbutton');
-      let VerTendenciasBtn = document.getElementById('verTendenciasButton');
 
-      let GoBack = () => {
-        window.history.back();
-      }
 
-      let VerTendencias = () => {
-        console.log("Mostrando tendencias...");
-      }
+    <script>
 
-      let CheckCred = () => {
-        if (!sessionStorage.getItem("user-creds")) {
-          window.location.href = 'login';
+
+
+        let GoBackBtn = document.getElementById('gobackbutton');
+        let VerTendenciasBtn = document.getElementById('verTendenciasButton');
+
+
+        let GoBack = () => {
+            window.history.back();
         }
-      }
 
-      window.addEventListener('load', CheckCred);
-      GoBackBtn.addEventListener('click', GoBack);
-      VerTendenciasBtn.addEventListener('click', VerTendencias);
+        let VerTendencias = () => {
+            console.log("Mostrando tendencias...");
+        }
 
-      VerTendenciasBtn.addEventListener('click', () => {
-        localStorage.setItem('lastVisitedPage', 'tendenciasn1'); 
-        window.location.href = 'tendenciasn1'; 
-      });
-  </script>
+        let CheckCred = () => {
+            if (!sessionStorage.getItem("user-creds")) {
+                window.location.href = 'login';
+            }
+        }
 
-  <script type="module">
-      // Importar Firebase y Firestore
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-      import { getFirestore, collection, orderBy, query, limit, getDocs,getDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        window.addEventListener('load', CheckCred);
+        GoBackBtn.addEventListener('click', GoBack);
+        VerTendenciasBtn.addEventListener('click', VerTendencias);
 
-      // Configuración de Firebase
-      const firebaseConfig = {
-              apiKey: "AIzaSyAtOj7REqncVDvnF4Ltjz--SJRrs-pfOgg",
-              authDomain: "greensense-d1a08.firebaseapp.com",
-              databaseURL:"https://greensense-d1a08-default-rtdb.firebaseio.com",
-              projectId: "greensense-d1a08",
-              storageBucket: "greensense-d1a08.appspot.com",
-              messagingSenderId: "314353204814",
-              appId: "1:314353204814:web:a5c41bf841a1511a69cd1f",
-              measurementId: "G-CK4PCZD6B0"
+        VerTendenciasBtn.addEventListener('click', () => {
+            localStorage.setItem('lastVisitedPage', 'tendenciasn1');
+            window.location.href = 'tendenciasn1';
+
+
+        });
+
+
+    </script>
+
+    <script type="module">
+
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, orderBy, addDoc, query, limit, getDocs, getDoc, doc, setDoc, serverTimestamp, deleteDoc, Timestamp, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+
+        const firebaseConfig = {
+            apiKey: window.env.API_KEY,
+            authDomain: window.env.AUTH_DOMAIN,
+            databaseURL: window.env.DATABASE_URL,
+            projectId: window.env.PROJECT_ID,
+            storageBucket: window.env.STORAGE_BUCKET,
+            messagingSenderId: window.env.MESSAGING_SENDER_ID,
+            appId: window.env.APP_ID,
+            measurementId: window.env.MEASUREMENT_ID
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        async function getWateringSchedule() {
+            try {
+                const docRef = doc(db, "RiegoN1", "schedule1");
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    document.getElementById('watering-time').value = data.wateringTime;
+                    document.getElementById('watering-time2').value = data.wateringTime2;
+                    document.getElementById('watering-time3').value = data.wateringTime3;
+
+                    const selectedDays = data.selectedDays || [];
+                    selectedDays.forEach(day => {
+                        document.getElementById(day).classList.add('selected');
+                    });
+
+                } else {
+                    console.log("No se encontró la programación de riego en Firestore.");
+                }
+            } catch (error) {
+                console.error("Error obteniendo la programación de riego:", error);
+            }
+        }
+
+
+        window.addEventListener('load', getWateringSchedule);
+
+        async function getLightSchedule() {
+            try {
+                const docRef = doc(db, "LuzN1", "schedule1");
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    document.getElementById('turn-on-time').value = data.turnOnTime;
+                    document.getElementById('turn-off-time').value = data.turnOffTime;
+                } else {
+                    console.log("No se encontró la programación de riego en Firestore.");
+                }
+            } catch (error) {
+                console.error("Error obteniendo la programación de riego:", error);
+            }
+        }
+
+
+        window.addEventListener('load', getLightSchedule);
+
+
+        document.querySelectorAll('.toggle-button').forEach(button => {
+            button.addEventListener('click', () => {
+                button.classList.toggle('selected');
+            });
+        });
+
+        async function saveWateringSchedule() {
+            const wateringTime = document.getElementById('watering-time').value;
+            const wateringTime2 = document.getElementById('watering-time2').value;
+            const wateringTime3 = document.getElementById('watering-time3').value;
+
+            const selectedDays = Array.from(document.querySelectorAll('.toggle-button.selected')).map(button => button.id);
+
+            try {
+                const docRef = doc(db, "RiegoN1", "schedule1");
+                await setDoc(docRef, { wateringTime, wateringTime2, wateringTime3, selectedDays });
+                console.log("Programación de riego guardada en Firestore.");
+                alert("Horario de Riego Guardado!");
+            } catch (error) {
+                console.error("Error guardando la programación de riego:", error);
+            }
+        }
+
+
+        document.getElementById('save-watering-schedule').addEventListener('click', saveWateringSchedule);
+
+        async function saveLightSchedule() {
+            const turnOnTime = document.getElementById('turn-on-time').value;
+            const turnOffTime = document.getElementById('turn-off-time').value;
+
+            try {
+                const docRef = doc(db, "LuzN1", "schedule1");
+                await setDoc(docRef, { turnOnTime, turnOffTime });
+                console.log("Programación de luz guardada en Firestore.");
+                alert("Programación de Luz Guardada!");
+            } catch (error) {
+                console.error("Error guardando la programación de luz:", error);
+            }
+        }
+
+        document.getElementById('save-light-schedule').addEventListener('click', saveLightSchedule);
+
+
+
+        async function getPlantName(index) {
+            try {
+                const docRef = doc(db, "plantNamesN1", `plant${index}`);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    return docSnap.data().name;
+                } else {
+                    return null;
+                }
+            } catch (error) {
+                console.error("Error obteniendo el nombre de la planta:", error);
+                return null;
+            }
+        }
+
+
+        async function savePlantName(index, name) {
+            try {
+                const docRef = doc(db, "plantNamesN1", `plant${index}`);
+                await setDoc(docRef, { name });
+                console.log("Nombre de planta guardado en Firestore.");
+            } catch (error) {
+                console.error("Error guardando el nombre de la planta:", error);
+            }
+        }
+
+
+        async function updatePlantNames() {
+            document.querySelectorAll('.plant-name').forEach(async (element, index) => {
+                const plantName = await getPlantName(index + 1);
+                if (plantName) {
+                    element.textContent = plantName;
+                }
+            });
+        }
+
+        document.querySelectorAll('.plant-name').forEach((element, index) => {
+            element.addEventListener('dblclick', async () => {
+                const newName = prompt('Ingrese un nuevo nombre para la planta:', element.textContent);
+                if (newName !== null && newName !== '') {
+                    element.textContent = newName;
+                    await savePlantName(index + 1, newName);
+                }
+            });
+        });
+        async function getSensorData() {
+            try {
+
+                const sensorDataCollection = collection(db, 'sensors_dataN1');
+                const q = query(sensorDataCollection, orderBy('date', 'desc'), limit(1));
+
+                const querySnapshot = await getDocs(q);
+
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+
+                    document.getElementById('temperature').innerText = data.temperature + ' °C';
+                    document.getElementById('humidity').innerText = data.humidity + ' %';
+                    document.getElementById('humidity1').innerText = data.moisture + ' %';
+                    document.getElementById('humidity2').innerText = data.moisture2 + ' %';
+                    document.getElementById('humidity3').innerText = data.moisture + ' %';
+                    document.getElementById('light').innerText = data.lux + ' ohmios';
+                    const timestamp = data.date.toDate();
+                    const formattedDate = timestamp.toLocaleString();
+                    document.getElementById('lastUpdateDate').innerText = formattedDate;
+
+
+                    // const ultimosDatosSensores = `Últimos datos de los sensores:\nTemperatura: ${data.temperature} °C\nHumedad: ${data.humidity}
+                    //  %\nHumedad 1: ${data.moisture} %\nHumedad 2: ${data.moisture2} 
+                    // %\nHumedad 3: ${data.moisture} %\nLuz: ${data.lux} lux\nFecha: ${formattedDate}`;
+                    // saveMessage('Sensors', ultimosDatosSensores);
+
+
+                });
+            } catch (error) {
+                console.error('Error al obtener los datos del sensor:', error);
+            }
+        }
+
+
+
+        function normalizeText(text) {
+            return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        }
+
+        async function checkAndSetIrrigationState() {
+            try {
+
+                const options = { timeZone: 'America/Santo_Domingo' };
+                const currentDay = normalizeText(new Date().toLocaleString('es-ES', { weekday: 'long', ...options }).toLowerCase());
+                const currentHourString = new Date().toLocaleString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false, ...options });
+
+
+                const docRef = doc(db, "RiegoN1", "schedule1");
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    const selectedDays = data.selectedDays || [];
+
+
+                    const normalizedSelectedDays = selectedDays.map(day => normalizeText(day));
+
+                    if (normalizedSelectedDays.includes(currentDay)) {
+                        const wateringTime = data.wateringTime;
+
+
+                        const [wateringHour, wateringMinute] = wateringTime.split(':').map(Number);
+                        const [currentHour, currentMinute] = currentHourString.split(':').map(Number);
+
+
+                        if (wateringHour === currentHour && wateringMinute === currentMinute) {
+
+                            const currentState = data.state;
+
+
+                            if (currentState !== "on") {
+                                await setDoc(docRef, { state: "on" }, { merge: true });
+                            }
+                        } else {
+
+                            await setDoc(docRef, { state: "off" }, { merge: true });
+                        }
+                    } else {
+
+                        await setDoc(docRef, { state: "off" }, { merge: true });
+                    }
+                } else {
+                    console.log("No se encontró la programación de riego en Firestore.");
+                }
+            } catch (error) {
+                console.error("Error al verificar y establecer el estado de riego:", error);
+            }
+        }
+
+        async function checkAndSetLightState() {
+            try {
+                const options = { timeZone: 'America/Santo_Domingo' };
+                const currentHourString = new Date().toLocaleString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false, ...options });
+
+                const docRef = doc(db, "LuzN1", "schedule1");
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    const turnOnTime = data.turnOnTime;
+                    const turnOffTime = data.turnOffTime;
+
+                    const [turnOnHour, turnOnMinute] = turnOnTime.split(':').map(Number);
+                    const [turnOffHour, turnOffMinute] = turnOffTime.split(':').map(Number);
+                    const [currentHour, currentMinute] = currentHourString.split(':').map(Number);
+
+                    if (turnOnHour < currentHour || (turnOnHour === currentHour && turnOnMinute <= currentMinute)) {
+                        // If the current time is after the turn-on time, set the state to "on"
+                        if ((currentHour === turnOnHour && currentMinute === turnOnMinute) ||
+                            (currentHour > turnOnHour && currentHour < turnOffHour) ||
+                            (currentHour === turnOffHour && currentMinute < turnOffMinute) ||
+                            (turnOnHour > 12 && turnOffHour < 12)) {
+                            await setDoc(docRef, { state: "on" }, { merge: true });
+                        }
+                    } else {
+                        // If the current time is before the turn-on time, set the state to "off"
+                        await setDoc(docRef, { state: "off" }, { merge: true });
+                    }
+
+                    if (turnOffHour < currentHour || (turnOffHour === currentHour && turnOffMinute <= currentMinute)) {
+                        // If the current time is after the turn-off time, set the state to "off"
+                        await setDoc(docRef, { state: "off" }, { merge: true });
+                    }
+                } else {
+                    console.log("No se encontró la programación de luz en Firestore.");
+                }
+            } catch (error) {
+                console.error("Error al verificar y establecer el estado de luz:", error);
+            }
+        }
+
+
+
+        async function getSensorDataPh() {
+            try {
+
+                const sensorDataCollection = collection(db, 'sensor_Ph');
+                const q = query(sensorDataCollection, orderBy('date', 'desc'), limit(1));
+
+                const querySnapshot = await getDocs(q);
+
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    document.getElementById('ph').innerText = data.pH;
+                    const timestamp = data.date.toDate();
+                    const formattedDate = timestamp.toLocaleString();
+                });
+            } catch (error) {
+                console.error('Error al obtener los datos del sensor:', error);
+            }
+        }
+
+        setInterval(getSensorData, 60000);
+        setInterval(getSensorDataPh, 30000);
+        setInterval(checkAndSetIrrigationState, 2000);
+        setInterval(checkAndSetLightState, 2000);
+
+
+
+        window.onload = () => {
+            getSensorData();
+            getSensorDataPh();
+            checkAndSetIrrigationState();
+            checkAndSetLightState();
+            clearChatHistory();
+            clearChatHistory4();
+
+        };
+
+
+        window.addEventListener('load', updatePlantNames);
+
+
+        const chatButton = document.getElementById('chatButton');
+        const chatWindow = document.getElementById('chatWindow');
+        const closeChatButton = document.getElementById('closeChatButton');
+        const sendMessageButton = document.getElementById('sendMessageButton');
+        const userMessageInput = document.getElementById('userMessage');
+
+
+        const openChat = () => {
+            chatWindow.style.display = 'block';
+            chatButton.style.display = 'none';
+            getLastSensorData();
+            getLastRiego();
+            getLastLuz();
+
+
+        };
+        chatButton.addEventListener('click', openChat);
+
+        const closeChat = () => {
+            chatWindow.style.display = 'none';
+            chatButton.style.display = 'block';
+            clearChatHistory();
+        };
+        closeChatButton.addEventListener('click', closeChat);
+
+        sendMessageButton.addEventListener('click', async () => {
+            await sendMessage();
+        });
+
+        userMessageInput.addEventListener('keypress', async (e) => {
+            if (e.key === 'Enter') {
+                await sendMessage();
+            }
+        });
+
+        async function saveMessage(sender, message) {
+            try {
+                const timestamp = new Date();
+                await setDoc(doc(db, 'chatHistory', timestamp.getTime().toString()), {
+                    sender: sender,
+                    message: message,
+                    timestamp: timestamp
+                });
+
+                await programWateringTime(sender, message);
+                await deleteWateringTime(sender, message);
+                await programLightSchedule(sender, message);
+            } catch (error) {
+                console.error('Error al guardar el mensaje en Firestore:', error);
+            }
+        }
+
+
+        async function programWateringTime(sender, message) {
+            try {
+
+                const senderLowerCase = sender.toLowerCase();
+                const messageLowerCase = message.toLowerCase();
+
+                const horaRegex = /\b\d{1,2}:\d{1,2}\b/;
+                const diasRegex = /\b(lunes|martes|miércoles|miercoles|jueves|viernes|sábado|sabado|domingo)\b/g;
+
+                const configurarRegex = /\b(configurar|configura|programa|programar|establece|establecer|cambia|cambiar|pon|poner|agregar|agrega)\b/;
+                const riegoRegex = /\bhora de riego|la hora de riego\b/;
+                const diasRiegoRegex = /\bdías de riego|dias de riego|dia de riego|día de riego|los dias de riego|los días de riego\b/;
+
+                if (senderLowerCase === "agricultor" && configurarRegex.test(messageLowerCase) && (riegoRegex.test(messageLowerCase) || diasRiegoRegex.test(messageLowerCase))) {
+
+                    let horaRiego = null;
+                    let diasRiego = [];
+
+                    if (horaRegex.test(messageLowerCase)) {
+
+                        horaRiego = convertirFormatoHora(messageLowerCase.match(horaRegex)[0]);
+                    }
+
+                    const diasRiegoMatch = messageLowerCase.match(diasRegex);
+                    if (diasRiegoMatch) {
+                        diasRiego = diasRiegoMatch.map(dia => {
+
+                            return dia.replace(/[áéíóú]/g, match => {
+                                const accents = 'áéíóú';
+                                const accentsOut = 'aeiou';
+                                const index = accents.indexOf(match);
+                                return accentsOut[index];
+                            });
+                        });
+                    }
+
+                    if (horaRiego) {
+
+                        await programWateringTimeHelper("wateringTime", horaRiego);
+                        console.log(`Hora de riego 01 programada por Agricultor: ${horaRiego}`);
+                    }
+
+                    if (messageLowerCase.includes("riego 02")) {
+
+                        await programWateringTimeHelper("wateringTime2", horaRiego);
+                        console.log(`Hora de riego 02 programada por Agricultor: ${horaRiego}`);
+                    }
+
+                    if (messageLowerCase.includes("riego 03")) {
+
+                        await programWateringTimeHelper("wateringTime3", horaRiego);
+                        console.log(`Hora de riego 03 programada por Agricultor: ${horaRiego}`);
+                    }
+
+                    if (diasRiego.length > 0) {
+
+                        await programWateringDays(diasRiego);
+                        console.log(`Días de riego programados por Agricultor: ${diasRiego}`);
+                    }
+
+                } else {
+                    // Si no se proporciona una hora de riego o días de riego válidos, responder con un mensaje de ayuda
+                    // const mensajeAI = "Para configurar la hora de riego y los días de riego, por favor incluye la hora en formato HH:MM y los días de la semana. Por ejemplo: 'Configurar hora de riego 01 a las 08:00 para los lunes, martes'.";
+                    // await saveMessage("IA Gardener", mensajeAI);
+                    // console.log("Mensaje de ayuda enviado por IA Gardener:", mensajeAI);
+                }
+            } catch (error) {
+                console.error("Error al programar la hora de riego:", error);
+            }
+        }
+
+
+
+
+        async function programWateringDays(selectedDays) {
+            try {
+
+                const docRef = doc(db, "RiegoN1", "schedule1");
+
+                await setDoc(docRef, { selectedDays }, { merge: true });
+            } catch (error) {
+                console.error("Error al programar los días de riego:", error);
+            }
+        }
+
+
+        function convertirFormatoHora(hora) {
+            const [horas, minutos] = hora.split(":").map(Number);
+
+            const horasFormateadas = horas.toString().padStart(2, "0");
+            const minutosFormateados = minutos.toString().padStart(2, "0");
+
+            return `${horasFormateadas}:${minutosFormateados}`;
+        }
+
+        async function programWateringTimeHelper(field, horaRiego) {
+
+            const docRef = doc(db, "RiegoN1", "schedule1");
+            await setDoc(docRef, { [field]: horaRiego }, { merge: true });
+
+            console.log(`Hora de riego ${field.substr(-1)} programada por Agricultor: ${horaRiego}`);
+        }
+
+
+        async function deleteWateringTime(sender, message) {
+            try {
+                const senderLowerCase = sender.toLowerCase();
+                const messageLowerCase = message.toLowerCase();
+
+                const eliminarRegex = /\b(eliminar|elimina|borra|borrar|quita|quitar)\b/;
+                const riegoRegex = /\bhora de riego|la hora de riego\b/;
+                const diasRiegoRegex = /\bdías de riego|dia de riego\b/;
+
+                if (senderLowerCase === "agricultor" && eliminarRegex.test(messageLowerCase) && (riegoRegex.test(messageLowerCase) || diasRiegoRegex.test(messageLowerCase))) {
+
+                    if (messageLowerCase.includes("riego 01")) {
+                        await deleteWateringTimeHelper("wateringTime");
+                        console.log("Hora de riego 01 eliminada por Agricultor");
+                    } else if (messageLowerCase.includes("riego 02")) {
+                        await deleteWateringTimeHelper("wateringTime2");
+                        console.log("Hora de riego 02 eliminada por Agricultor");
+                    } else if (messageLowerCase.includes("riego 03")) {
+                        await deleteWateringTimeHelper("wateringTime3");
+                        console.log("Hora de riego 03 eliminada por Agricultor");
+                    } else if (diasRiegoRegex.test(messageLowerCase)) {
+
+                        const dias = extractDays(messageLowerCase);
+                        await deleteWateringDays(dias);
+                        console.log("Días de riego eliminados por Agricultor:", dias.join(", "));
+                    } else {
+                        // const mensajeAI = "Para eliminar una hora de riego o días de riego, por favor incluye la referencia específica (01, 02 o 03 para la hora de riego y 'días de riego' para eliminar los días). Por ejemplo: 'Eliminar hora de riego 01' o 'Eliminar días de riego lunes, martes'.";
+                        // await saveMessage("IA Gardener", mensajeAI);
+                        // console.log("Mensaje de ayuda enviado por IA Gardener:", mensajeAI);
+                    }
+                }
+            } catch (error) {
+                console.error("Error al eliminar la hora de riego:", error);
+            }
+        }
+
+
+        function extractDays(message) {
+            const diasRegex = /lunes|martes|miércoles|miercoles|jueves|viernes|sábado|sabado|domingo/g;
+            const matches = message.match(diasRegex);
+            if (matches) {
+                return matches.map(match => match.toLowerCase());
+            }
+            return [];
+        }
+
+        async function deleteWateringDays(dias) {
+            try {
+                const docRef = doc(db, "RiegoN1", "schedule1");
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    const selectedDays = data.selectedDays || [];
+                    const updatedDays = selectedDays.filter(day => !dias.includes(day.toLowerCase()));
+                    await setDoc(docRef, { selectedDays: updatedDays }, { merge: true });
+                } else {
+                    console.log("No se encontró la programación de riego en Firestore.");
+                }
+            } catch (error) {
+                console.error("Error al eliminar los días de riego:", error);
+            }
+        }
+
+
+        async function deleteWateringTimeHelper(field) {
+            try {
+                const docRef = doc(db, "RiegoN1", "schedule1");
+                const fieldValue = {};
+                fieldValue[field] = "";
+
+                await setDoc(docRef, fieldValue, { merge: true });
+            } catch (error) {
+                console.error(`Error al eliminar la hora de riego ${field}:`, error);
+            }
+        }
+
+
+        async function programLightSchedule(sender, message) {
+            try {
+                const senderLowerCase = sender.toLowerCase();
+                const messageLowerCase = message.toLowerCase();
+
+                const horaRegex = /\b\d{1,2}:\d{1,2}\b/;
+
+                const configurarRegex = /\b(configurar|programar|establecer|cambiar)\b/;
+                const encendidoRegex = /\bhora de encendido|la hora de encendido\b/;
+                const apagadoRegex = /\bhora de apagado|la hora de apagado\b/;
+
+                if (senderLowerCase === "agricultor" && configurarRegex.test(messageLowerCase) && (encendidoRegex.test(messageLowerCase) || apagadoRegex.test(messageLowerCase))) {
+
+                    let horaEncendido = null;
+                    let horaApagado = null;
+
+                    if (horaRegex.test(messageLowerCase)) {
+                        const horaMatch = messageLowerCase.match(horaRegex);
+                        if (horaMatch) {
+                            const hora = convertirFormatoHora(horaMatch[0]);
+                            if (encendidoRegex.test(messageLowerCase)) {
+                                horaEncendido = hora;
+                            } else if (apagadoRegex.test(messageLowerCase)) {
+                                horaApagado = hora;
+                            }
+                        }
+                    }
+
+                    if (horaEncendido || horaApagado) {
+                        await programLightScheduleHelper(horaEncendido, horaApagado);
+                        console.log(`Horario de luz programado por Agricultor: Encendido ${horaEncendido}, Apagado ${horaApagado}`);
+                    } else {
+                        // // Si no se proporciona una hora de encendido o apagado válida, responder con un mensaje de ayuda
+                        // const mensajeAI = "Para configurar la hora de encendido o apagado de la luz, por favor incluye la hora en formato HH:MM. Por ejemplo: 'Configurar hora de encendido de la luz para las 7:00' o 'Configurar hora de apagado de la luz a las 8:00'.";
+                        // await saveMessage("IA Gardener", mensajeAI);
+                        // console.log("Mensaje de ayuda enviado por IA Gardener:", mensajeAI);
+                    }
+
+                }
+            } catch (error) {
+                console.error("Error al programar el horario de luz:", error);
+            }
+        }
+
+        async function programLightScheduleHelper(horaEncendido, horaApagado) {
+            try {
+                const docRef = doc(db, "LuzN1", "schedule1");
+                const data = {};
+                if (horaEncendido) data.turnOnTime = horaEncendido;
+                if (horaApagado) data.turnOffTime = horaApagado;
+                await setDoc(docRef, data, { merge: true });
+            } catch (error) {
+                console.error("Error al programar el horario de luz:", error);
+            }
+        }
+
+
+
+
+
+        async function showChatHistory() {
+            try {
+                const chatHistoryCollection = collection(db, 'chatHistory');
+                const q = query(chatHistoryCollection, orderBy('timestamp', 'asc'));
+                const querySnapshot = await getDocs(q);
+
+                const chatBody = document.getElementById('chatBody');
+                chatBody.innerHTML = '';
+
+                let hasUserMessages = false;
+                let hasBotMessages = false;
+
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    if (data.sender === "Agricultor") {
+                        hasUserMessages = true;
+                    } else if (data.sender === "AI Gardener") {
+                        hasBotMessages = true;
+                    } else {
+
+                    }
+                });
+
+                if (!hasUserMessages && !hasBotMessages) {
+
+                    const welcomeMessage = "¡Hola agricultor! ¿Cómo puedo ayudarte hoy?";
+                    const helpWateringTime = "Para programar hora y días de riego, por favor incluye la hora en formato HH:MM. Por ejemplo: 'Configurar hora de riego 01 a las 08:00', 'Configurar hora de riego 01 a las 08:00 para los lunes, martes' o 'Configurar los días de riego para los viernes."
+                    const helpdeleteWateringTime = "Para eliminar una hora de riego o días de riego, por favor incluye la referencia específica (01, 02 o 03 para la hora de riego y 'días de riego' para eliminar los días). Por ejemplo: 'Eliminar hora de riego 01' o 'Eliminar días de riego lunes, martes'"
+                    displayBotResponse(welcomeMessage);
+                    displayBotResponse(helpWateringTime);
+                    displayBotResponse(helpdeleteWateringTime);
+                } else {
+                    querySnapshot.forEach((doc) => {
+                        const data = doc.data();
+                        if (data.sender !== "Sensors" && data.sender !== "Sensors2") {
+                            const messageDiv = document.createElement('div');
+                            messageDiv.classList.add('message');
+                            messageDiv.textContent = `${data.sender}: ${data.message}`;
+                            chatBody.appendChild(messageDiv);
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Error al mostrar el historial del chatbot:', error);
+            }
+        }
+
+
+        async function clearChatHistory() {
+            try {
+                const chatHistoryCollection = collection(db, 'chatHistory');
+                const querySnapshot = await getDocs(chatHistoryCollection);
+                querySnapshot.forEach(async (doc) => {
+                    const data = doc.data();
+                    if (data.sender !== "Sensors" && data.sender !== "Admin") {
+                        await deleteDoc(doc.ref);
+                    }
+                });
+            } catch (error) {
+                console.error('Error al limpiar el historial del chatbot:', error);
+            }
+        }
+
+
+        async function clearChatHistory4() {
+            try {
+                const chatHistoryCollection = collection(db, 'chatHistory');
+                const querySnapshot = await getDocs(chatHistoryCollection);
+                const currentDate = new Date();
+                querySnapshot.forEach(async (doc) => {
+                    const data = doc.data();
+                    if (data.sender === "Admin") {
+                        return;
+                    }
+                    const timestampInMillis = data.timestamp.toMillis();
+                    const timeDifference = currentDate.getTime() - timestampInMillis;
+
+                    const daysDifference = Math.floor(timeDifference / (1000 * 3600 * 24));
+                    if (daysDifference < 4) {
+
+                        return;
+                    }
+
+                    await deleteDoc(doc.ref);
+                });
+            } catch (error) {
+                console.error('Error al limpiar el historial del chatbot:', error);
+            }
+        }
+
+
+
+
+        async function getLastLuz() {
+            try {
+                const options = { timeZone: 'America/Santo_Domingo' };
+                const currentHourString = new Date().toLocaleString('en-ES', { hour: '2-digit', minute: '2-digit', hour12: false, ...options });
+
+                const docRef = doc(db, "LuzN1", "schedule1");
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    const turnOnTime = data.turnOnTime;
+                    const turnOffTime = data.turnOffTime;
+                    const timestamp = new Date();
+                    const formattedDate = timestamp.toLocaleDateString("es-DO", options);
+
+                    const [turnOnHour, turnOnMinute] = turnOnTime.split(':').map(Number);
+                    const [turnOffHour, turnOffMinute] = turnOffTime.split(':').map(Number);
+                    const [currentHour, currentMinute] = currentHourString.split(':').map(Number);
+
+                    let newState = "off";
+                    if (currentHour === turnOnHour && currentMinute === turnOnMinute) {
+                        newState = "on";
+                    } else if ((currentHour > turnOffHour) || (currentHour === turnOffHour && currentMinute >= turnOffMinute)) {
+                        newState = "off";
+                    } else if (currentHour > turnOnHour || (currentHour === turnOnHour && currentMinute > turnOnMinute)) {
+                        newState = "on";
+                    }
+
+                    await setDoc(docRef, { state: newState }, { merge: true });
+
+                    const lastLightConfig = { turnOnTime, turnOffTime };
+
+                    if (lastLightConfig) {
+                        const mensajeAI = `Última programación de luz: \nHora de encendido: ${data.turnOnTime} 
+                        \nHora de apagado: ${data.turnOffTime}`;
+                        const fechaActual = `Fecha y hora actual: Fecha: ${formattedDate}\n` +
+                            `Hora: ${currentHourString}`;
+
+                        await saveMessage('Sensors2', mensajeAI);
+                        await saveMessage('Sensors2', fechaActual);
+
+                        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${apiKey.apiKey}`,
+                            },
+                            body: JSON.stringify({
+                                model: "gpt-3.5-turbo",
+                                messages: [{ role: "user", content: mensajeAI }],
+                                max_tokens: 300,
+                            }),
+                        });
+
+                        if (!response.ok) {
+                            console.error('Error al solicitar respuesta de la IA:', response.status);
+                            return;
+                        }
+                    }
+                } else {
+                    console.log("No se encontró la programación de luz en Firestore.");
+                }
+            } catch (error) {
+                console.error("Error al verificar y establecer el estado de luz:", error);
+            }
+        }
+
+
+        async function getLastRiego() {
+            try {
+                const options = { timeZone: 'America/Santo_Domingo' };
+                const currentDay = normalizeText(new Date().toLocaleString('es-ES', { weekday: 'long', ...options }).toLowerCase());
+                const currentHourString = new Date().toLocaleString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false, ...options });
+
+                const docRef = doc(db, "RiegoN1", "schedule1");
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    const selectedDays = data.selectedDays || [];
+                    const normalizedSelectedDays = selectedDays.map(day => normalizeText(day));
+
+                    if (normalizedSelectedDays.includes(currentDay)) {
+                        const wateringTime = data.wateringTime;
+                        const [wateringHour, wateringMinute] = wateringTime.split(':').map(Number);
+                        const [currentHour, currentMinute] = currentHourString.split(':').map(Number);
+
+                        if (wateringHour === currentHour && wateringMinute === currentMinute) {
+                            const currentState = data.state;
+
+                            if (currentState !== "on") {
+                                await setDoc(docRef, { state: "on" }, { merge: true });
+                            }
+                        } else {
+                            await setDoc(docRef, { state: "off" }, { merge: true });
+                        }
+                    } else {
+                        await setDoc(docRef, { state: "off" }, { merge: true });
+                    }
+                } else {
+                    console.log("No se encontró la programación de riego en Firestore.");
+                }
+
+                const lastIrrigationConfig = docSnap.data();
+
+                if (lastIrrigationConfig) {
+                    const mensajeAI = `Última programación de riego: \nHora de Riego 01: ${lastIrrigationConfig.wateringTime} 
+            \nHora de Riego 02: ${lastIrrigationConfig.wateringTime2} \nHora de Riego 03: ${lastIrrigationConfig.wateringTime3}
+             \nDías de Riego: ${lastIrrigationConfig.selectedDays}`;
+                    await saveMessage('Sensors2', mensajeAI);
+
+                    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${apiKey.apiKey}`,
+                        },
+                        body: JSON.stringify({
+                            model: "gpt-3.5-turbo",
+                            messages: [{ role: "user", content: mensajeAI }],
+                            max_tokens: 300,
+                        }),
+                    });
+
+                    if (!response.ok) {
+                        console.error('Error al solicitar respuesta de la IA:', response.status);
+                        return;
+                    }
+                }
+            } catch (error) {
+                console.error("Error al verificar y establecer el estado de riego:", error);
+            }
+        }
+
+
+        async function getLastSensorData() {
+            try {
+                const options = { timeZone: 'America/Santo_Domingo' };
+                const currentHourString = new Date().toLocaleString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false, ...options });
+
+                const pHDataCollection = collection(db, 'sensor_Ph');
+                const pHQuery = query(pHDataCollection, orderBy('date', 'desc'), limit(1));
+                const pHQuerySnapshot = await getDocs(pHQuery);
+                let pH = null;
+                pHQuerySnapshot.forEach((doc) => {
+                    pH = doc.data().pH;
+                });
+
+                const sensorDataCollection = collection(db, 'sensors_dataN1');
+                const q = query(sensorDataCollection, orderBy('date', 'desc'), limit(1));
+
+                const querySnapshot = await getDocs(q);
+
+                querySnapshot.forEach(async (doc) => {
+                    const data = doc.data();
+                    const temperature = data.temperature;
+                    const humidity1 = data.moisture;
+                    const humidity2 = data.moisture2;
+                    const humidity3 = data.moisture;
+                    const light = data.lux;
+                    const timestamp = new Date();
+                    const formattedDate = timestamp.toLocaleDateString("es-DO", options);
+
+                    const plantName1 = await getPlantName(1);
+                    const plantName2 = await getPlantName(2);
+                    const plantName3 = await getPlantName(3);
+
+                    const ultimosDatosSensores = `Últimos datos de los sensores:\nTemperatura: ${data.temperature} °C\n` +
+                        `Humedad de la planta ${plantName1}: ${humidity1} %\n` +
+                        `Humedad de la planta ${plantName2}: ${humidity2} %\n` +
+                        `Humedad de la planta ${plantName3}: ${humidity3} %\n` +
+                        `pH: ${pH}\n` +
+                        `Sensor LDR (Luz): ${light} ohmios\nFecha: ${formattedDate}\n` +
+                        `Hora: ${currentHourString}`;
+
+                    await saveMessage('Sensors2', ultimosDatosSensores);
+
+                    if (ultimosDatosSensores) {
+                        const mensajeAI = `Últimos datos de los sensores: ${JSON.stringify(ultimosDatosSensores)}`;
+
+                        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${apiKey.apiKey}`,
+                            },
+                            body: JSON.stringify({
+                                model: "gpt-3.5-turbo",
+                                messages: [{ role: "user", content: mensajeAI }],
+                                max_tokens: 300,
+                            }),
+                        });
+
+                        if (!response.ok) {
+                            console.error('Error al solicitar respuesta de la IA:', response.status);
+                            return;
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error al obtener los datos del sensor y enviarlos a la IA:', error);
+            }
+        }
+
+
+
+        const apiKey = {
+            apiKey: window.env.OPENAI_API_KEY,
+        }
+
+        async function sendMessage() {
+            const userMessage = userMessageInput.value;
+
+            await saveMessage('Agricultor', userMessage);
+
+            const previousMessages = await getPreviousMessages();
+
+            const context = previousMessages.map(message => `${message.sender}: ${message.message}`).join('\n');
+
+            // Temas seleccionados
+            const selectedTopics = {
+                "valor de la luz": ["luz", "iluminación", "valor de la luz", "valor del ph"],
+                "recomendaciones sobre plantas": ["plantas", "recomendaciones de plantas", "consejos para plantas"],
+                "análisis de datos": ["datos", "análisis de datos", "información de datos", "humedad", "temperatura", "Ph"],
+                "significado": ["explicame los valores de los datos", "explica el valor de la luz", "ayuda con agricultura"],
+                "configuración": ["configuración de riego", "configuración de la luz", "configura los días de riego"],
+                "fecha y hora": ["fecha de los datos", "hora de los datos", "hora", "fecha", "hola"]
             };
-      const app = initializeApp(firebaseConfig);
-      const db = getFirestore(app);
 
-      // Obtener nombre de la planta desde Firestore
-      async function getPlantName(index) {
-        try {
-          const docRef = doc(db, "plantNamesN1", `plant${index}`);
-          const docSnap = await getDoc(docRef);
-          if (docSnap.exists()) {
-            return docSnap.data().name;
-          } else {
-            return null;
-          }
-        } catch (error) {
-          console.error("Error obteniendo el nombre de la planta:", error);
-          return null;
+            // Verificar si la pregunta del usuario está dentro de los temas seleccionados
+            let selectedTopic = '';
+            Object.entries(selectedTopics).forEach(([topic, keywords]) => {
+                if (keywords.some(keyword => userMessage.toLowerCase().includes(keyword))) {
+                    selectedTopic = topic;
+                }
+            });
+
+            let botResponse = '';
+
+            if (selectedTopic !== '') {
+                // Consultar a OpenAI para obtener una respuesta relacionada con el tema
+                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey.apiKey}`,
+                    },
+                    body: JSON.stringify({
+                        model: "gpt-3.5-turbo",
+                        messages: [{ role: "user", content: userMessage }, { role: "assistant", content: context }],
+                        max_tokens: 300,
+                    }),
+                });
+
+                if (response.ok) {
+                    const responseData = await response.json();
+                    botResponse = responseData.choices[0].message.content.trim();
+                } else {
+                    console.error('Error al solicitar respuesta del chatbot:', response.status);
+                }
+            } else {
+                // Responder que no puede responder esa pregunta
+                botResponse = "Lo siento, no puedo responder esa pregunta.";
+            }
+
+            // Guardar la respuesta del bot
+            await saveMessage('AI Gardener', botResponse);
+
+            // Mostrar la respuesta del bot
+            displayBotResponse(botResponse);
+
+            userMessageInput.value = '';
+            showChatHistory();
         }
-      }
 
-      // Guardar nombre de la planta en Firestore
-      async function savePlantName(index, name) {
-        try {
-          const docRef = doc(db, "plantNamesN1", `plant${index}`);
-          await setDoc(docRef, { name });
-          console.log("Nombre de planta guardado en Firestore.");
-        } catch (error) {
-          console.error("Error guardando el nombre de la planta:", error);
+
+
+
+        async function getPreviousMessages() {
+            try {
+                const querySnapshot = await getDocs(collection(db, 'chatHistory'));
+                return querySnapshot.docs.map(doc => doc.data());
+            } catch (error) {
+                console.error('Error al obtener los mensajes anteriores:', error);
+                return [];
+            }
         }
-      }
 
-      // Actualizar los nombres de las plantas en la página HTML
-      async function updatePlantNames() {
-        document.querySelectorAll('.plant-name').forEach(async (element, index) => {
-          const plantName = await getPlantName(index + 1);
-          if (plantName) {
-            element.textContent = plantName;
-          }
-        });
-      }
+        function displayBotResponse(response) {
 
-      // Event listener para editar nombre de la planta
-      document.querySelectorAll('.plant-name').forEach((element, index) => {
-        element.addEventListener('dblclick', async () => {
-          const newName = prompt('Ingrese un nuevo nombre para la planta:', element.textContent);
-          if (newName !== null && newName !== '') {
-            element.textContent = newName;
-            await savePlantName(index + 1, newName);
-          }
-        });
-      });
-      async function getSensorData() {
-      try {
-        // Obtiene la colección de datos de sensores y ordena por fecha descendente
-        const sensorDataCollection = collection(db, 'sensors_data');
-        const q = query(sensorDataCollection, orderBy('date', 'desc'), limit(1));
-        // Obtiene los documentos de la colección
-        const querySnapshot = await getDocs(q);
-        // Itera sobre los documentos y actualiza los valores en la página HTML
-        querySnapshot.forEach((doc) => {
-          const data = doc.data();
-          // Actualiza los elementos HTML con los valores obtenidos
-          document.getElementById('temperature').innerText = data.temperature + ' °C';
-          document.getElementById('humidity').innerText = data.humidity + ' %';
-          document.getElementById('humidity1').innerText = data.moisture + ' %';
-          document.getElementById('humidity2').innerText = data.moisture + ' %';
-          document.getElementById('humidity3').innerText = data.moisture + ' %';
-          document.getElementById('light').innerText = data.lux + ' lux';
-          document.getElementById('ph').innerText = data.ph;
-          const timestamp = data.date.toDate(); 
-          const formattedDate = timestamp.toLocaleString(); 
-          document.getElementById('lastUpdateDate').innerText = formattedDate;
-        });
-      } catch (error) {
-        console.error('Error al obtener los datos del sensor:', error);
-      }
-    }
-    setInterval(getSensorData, 30000);
-    window.onload = getSensorData;
-      // Cargar los nombres de las plantas al cargar la página
-      window.addEventListener('load', updatePlantNames);
-  </script>
+            const chatBody = document.querySelector('.chat-body');
+            const botMessageElement = document.createElement('div');
+            botMessageElement.classList.add('message');
 
-  <script type="module">
-      // Funciones para obtener datos del sensor y actualizar la página HTML
-  </script>
-  
+            botMessageElement.textContent = response;
+            chatBody.appendChild(botMessageElement);
+        }
+
+        async function toggleDarkMode(darkModeEnabled) {
+            if (darkModeEnabled) {
+                document.body.classList.add('dark-mode');
+                document.body.classList.remove('light-mode');
+                document.querySelector('.container').classList.add('dark-mode');
+                document.querySelector('.container').classList.remove('light-mode');
+                document.querySelectorAll('h2').forEach(element => {
+                    element.classList.add('dark-mode');
+                    element.classList.remove('light-mode');
+                });
+                document.getElementById('lastUpdateDate').classList.add('dark-mode');
+                document.getElementById('lastUpdateDate').classList.remove('light-mode');
+                document.querySelector('.chat-window').classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+                document.body.classList.add('light-mode');
+                document.querySelector('.container').classList.remove('dark-mode');
+                document.querySelector('.container').classList.add('light-mode');
+                document.querySelectorAll('h2').forEach(element => {
+                    element.classList.remove('dark-mode');
+                    element.classList.add('light-mode');
+                });
+                document.getElementById('lastUpdateDate').classList.remove('dark-mode');
+                document.getElementById('lastUpdateDate').classList.add('light-mode');
+                document.querySelector('.chat-window').classList.remove('dark-mode');
+            }
+        }
+
+
+        async function checkSwitchState() {
+            try {
+
+                const docSnap = await getDoc(doc(db, "Settings", "switchState"));
+                const switchState = docSnap.data().switchState;
+
+                toggleDarkMode(switchState);
+            } catch (error) {
+                console.error("Error al obtener el estado del switch desde Firestore:", error);
+            }
+        }
+
+
+
+
+        window.addEventListener('load', () => {
+            checkSwitchState();
+        });
+
+        window.addEventListener('load', showChatHistory);
+
+    </script>
+
+
 </body>
+
 </html>

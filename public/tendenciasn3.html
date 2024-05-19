@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -27,7 +28,7 @@
             text-align: center;
             display: flex;
             justify-content: space-between;
-            align-items: center; /* Alinear elementos verticalmente */
+            align-items: center;
         }
 
         .topnav h1 {
@@ -46,8 +47,8 @@
 
         h2 {
             text-align: center;
-            margin-bottom: 10px; /* Reducir el margen inferior */
-            color: #333; /* Color del encabezado para modo claro */
+            margin-bottom: 10px;
+            color: #333;
         }
 
         .icon {
@@ -71,130 +72,254 @@
             margin-top: 20px;
         }
 
-    </style>
-</head>
-<body>
-  <!--TOP BAR-->
-  <div class="topnav">
-    <button class="btn btn-outline-success" type="button" id="gobackbutton"><i class="fas fa-arrow-left"></i> Volver</button>
-    <h1>GreenSense Dashboard <i class="fas fa-seedling"></i></h1>
-  </div>
-  <h2 id="msg"></h2>
-  <h2 id="greet"></h2>
-  
-  <div class="container">
-    <h2>Condición del Nivel 3</h2>
-    <div id="dashboard1" class="dashboard">
-        <!-- Contenedor para los gráficos -->
-        <canvas id="temperatureChart" width="400" height="200"></canvas>
-        <canvas id="humidityChart" width="400" height="200"></canvas>
-    </div>
-    <h2>Datos del Suelo</h2>
-    <div id="dashboard2" class="dashboard">
-        <!-- Contenedor para el gráfico -->
-        <canvas id="soilHumidityChart" width="400" height="200"></canvas>
-    </div>
-    <h2>Intensidad de la Luz</h2>
-    <div id="dashboard3" class="dashboard">
-        <!-- Contenedor para el gráfico -->
-        <canvas id="lightChart" width="400" height="200"></canvas>
-    </div>
-</div>
-  
-  <script>
-      let UserCreds = JSON.parse(sessionStorage.getItem("user-creds"));
-      let UserInfo = JSON.parse(sessionStorage.getItem("user-info"));
-
-      let GoBackBtn = document.getElementById('gobackbutton');
-
-      let GoBack = () => {
-        window.history.back();
-      }
-
-      let CheckCred = () => {
-        if(!sessionStorage.getItem("user-creds"))
-        window.location.href = 'login'
-         else{
-
+        .dark-mode {
+            background-color: #333;
+            color: #fff;
 
         }
-      }
 
-      window.addEventListener('load', CheckCred);
-      GoBackBtn.addEventListener('click', GoBack);
 
-  </script>
+        .light-mode {
+            background-color: #f0f0f0;
+            color: #333;
 
-  <script type="module">
-        // Import the functions you need from the SDKs you need
+        }
+
+        .container.light-mode {
+            background-color: #fff;
+            color: #333;
+        }
+
+        .container.dark-mode {
+            background-color: #222;
+            color: #fff;
+        }
+
+        h2.light-mode {
+            color: #333;
+        }
+
+        h2.dark-mode {
+            color: #fff;
+        }
+
+        label.light-mode {
+            color: #000;
+        }
+
+        label.dark-mode {
+            color: #fff;
+        }
+
+        .date-picker-container {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .input-container {
+            display: flex;
+            flex-direction: column;
+            margin-right: 10px;
+        }
+
+        .input-container label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .input-container input {
+            padding: 5px;
+            border: none;
+            border-radius: 5px;
+            background-color: #f2f2f2;
+        }
+
+        .btn-apply {
+            background-color: #4CAF50;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .btn-apply:hover {
+            background-color: #3e8e41;
+        }
+    </style>
+    <script src="env.js"></script>
+</head>
+
+<body>
+    <div class="topnav">
+        <button class="btn btn-outline-success" type="button" id="gobackbutton"><i class="fas fa-arrow-left"></i>
+            Volver</button>
+        <h1>GreenSense Dashboard <i class="fas fa-seedling"></i></h1>
+    </div>
+    <h2 id="msg"></h2>
+    <h2 id="greet"></h2>
+
+    <div class="container">
+        <div class="date-picker-container">
+            <div class="input-container">
+                <label for="datePicker1">Seleccionar Fecha:</label>
+                <input type="date" id="datePicker1">
+            </div>
+            <button id="applyDateBtn1" class="btn-apply">Aplicar</button>
+        </div>
+
+        <h2>Condición del Nivel 1</h2>
+        <div id="dashboard1" class="dashboard">
+            <canvas id="temperatureChart" width="400" height="200"></canvas>
+            <canvas id="humidityChart" width="400" height="200"></canvas>
+            <button id="loadMoreButton1" style="display: none;">Cargar más</button>
+        </div>
+
+        <hr>
+
+        <div class="date-picker-container">
+            <div class="input-container">
+                <label for="datePicker2">Seleccionar Fecha:</label>
+                <input type="date" id="datePicker2">
+            </div>
+            <button id="applyDateBtn2" class="btn-apply">Aplicar</button>
+        </div>
+
+        <h2>Datos del Suelo</h2>
+        <div id="dashboard2" class="dashboard">
+            <canvas id="soilHumidityChart" width="400" height="200"></canvas>
+            <button id="loadMoreButton2" style="display: none;">Cargar más</button>
+        </div>
+
+        <hr>
+
+        <div class="date-picker-container">
+            <div class="input-container">
+                <label for="datePicker3">Seleccionar Fecha:</label>
+                <input type="date" id="datePicker3">
+            </div>
+            <button id="applyDateBtn3" class="btn-apply">Aplicar</button>
+        </div>
+
+        <h2>Intensidad de la Luz</h2>
+        <div id="dashboard3" class="dashboard">
+            <canvas id="lightChart" width="400" height="200"></canvas>
+            <button id="loadMoreButton3" style="display: none;">Cargar más</button>
+        </div>
+    </div>
+
+    <script type="module">
+
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
-        import { getFirestore, collection, query, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, query, orderBy, getDocs, doc, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
-              apiKey: "AIzaSyAtOj7REqncVDvnF4Ltjz--SJRrs-pfOgg",
-              authDomain: "greensense-d1a08.firebaseapp.com",
-              databaseURL:"https://greensense-d1a08-default-rtdb.firebaseio.com",
-              projectId: "greensense-d1a08",
-              storageBucket: "greensense-d1a08.appspot.com",
-              messagingSenderId: "314353204814",
-              appId: "1:314353204814:web:a5c41bf841a1511a69cd1f",
-              measurementId: "G-CK4PCZD6B0"
-            };
+            apiKey: window.env.API_KEY,
+            authDomain: window.env.AUTH_DOMAIN,
+            databaseURL: window.env.DATABASE_URL,
+            projectId: window.env.PROJECT_ID,
+            storageBucket: window.env.STORAGE_BUCKET,
+            messagingSenderId: window.env.MESSAGING_SENDER_ID,
+            appId: window.env.APP_ID,
+            measurementId: window.env.MEASUREMENT_ID
+        };
+
 
 
         const app = initializeApp(firebaseConfig);
         const analytics = getAnalytics(app);
         const db = getFirestore(app);
 
-        // Función para obtener los datos del sensor desde Firebase Firestore
-        async function getSensorData() {
+        let temperatureChart;
+        let humidityChart;
+        let soilHumidityChart;
+        let lightChart;
+        let sensorData1 = [];
+        let sensorData2 = [];
+        let sensorData3 = [];
+        let currentIndex1 = 0;
+        let currentIndex2 = 0;
+        let currentIndex3 = 0;
+
+        async function getSensorData1(selectedDate) {
             try {
-                // Obtener la colección de datos de sensores y ordenar por fecha
-                const sensorDataCollection = collection(db, 'sensors_data');
+
+                const selectedDateTime = new Date(selectedDate);
+
+
+                const sensorDataCollection = collection(db, 'sensors_dataN3');
                 const q = query(sensorDataCollection, orderBy('date'));
                 const querySnapshot = await getDocs(q);
-                
-                // Arrays para almacenar los datos de temperatura y humedad
-                let temperatureData = [];
-                let humidityData = [];
-                let dateLabels = [];
-                
-                // Iterar sobre los documentos y obtener los datos
+
+
+                sensorData1 = [];
+
                 querySnapshot.forEach((doc) => {
                     const data = doc.data();
-                    temperatureData.push(data.temperature);
-                    humidityData.push(data.humidity);
-                    dateLabels.push(formatDate(data.date)); // Formatear la fecha
+
+                    const documentDateTime = data.date.toDate();
+
+                    if (selectedDateTime.toDateString() === documentDateTime.toDateString()) {
+
+                        if (documentDateTime.getMinutes() % 5 === 0) {
+                            sensorData1.push(data);
+                        }
+                    }
                 });
-                
-                // Llamar a la función para actualizar los gráficos
-                updateCharts(temperatureData, humidityData, dateLabels);
+
+
+                updateCharts1(sensorData1.slice(0, 100));
             } catch (error) {
-                console.error('Error al obtener los datos del sensor:', error);
+                console.error('Error al obtener los datos del sensor de Condición del Nivel 1:', error);
             }
         }
 
-        // Función para formatear la fecha en formato legible
-        function formatDate(timestamp) {
-            const date = timestamp.toDate(); // Convertir el timestamp a objeto de fecha
-            return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}`;
+        function loadMoreData1() {
+            const newData = sensorData1.slice(currentIndex1, currentIndex1 + 100);
+            updateCharts1(newData);
+            currentIndex1 += 100;
+            toggleLoadMoreButton1();
         }
 
-        // Función para actualizar los gráficos con los datos obtenidos
-        function updateCharts(temperatureData, humidityData, dateLabels) {
+        function toggleLoadMoreButton1() {
+            const loadMoreButton = document.getElementById('loadMoreButton1');
+            if (currentIndex1 < sensorData1.length) {
+                loadMoreButton.style.display = 'block';
+            } else {
+                loadMoreButton.style.display = 'none';
+            }
+        }
+
+        function updateCharts1(data) {
+            if (temperatureChart) {
+                temperatureChart.destroy();
+            }
+            if (humidityChart) {
+                humidityChart.destroy();
+            }
+
+            const dateLabels = data.map(item => item.date.toDate().toLocaleString());
+            const temperatureData = data.map(item => item.temperature);
+            const humidityData = data.map(item => item.humidity);
+
             const temperatureChartCtx = document.getElementById('temperatureChart').getContext('2d');
             const humidityChartCtx = document.getElementById('humidityChart').getContext('2d');
 
-            const temperatureChart = new Chart(temperatureChartCtx, {
+            temperatureChart = new Chart(temperatureChartCtx, {
                 type: 'line',
                 data: {
                     labels: dateLabels,
                     datasets: [{
                         label: 'Temperatura (°C)',
                         data: temperatureData,
-                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                        borderColor: 'rgba(255, 99, 132, 1)',
+                        backgroundColor: 'rgba(255, 0, 0, 0.2)',
+                        borderColor: 'rgba(255, 0, 0, 1)',
                         borderWidth: 1
                     }]
                 },
@@ -228,7 +353,7 @@
                 }
             });
 
-            const humidityChart = new Chart(humidityChartCtx, {
+            humidityChart = new Chart(humidityChartCtx, {
                 type: 'line',
                 data: {
                     labels: dateLabels,
@@ -269,11 +394,315 @@
                     }
                 }
             });
+
+            toggleLoadMoreButton1();
         }
 
-        // Llamar a la función para obtener los datos del sensor inicialmente y cada cierto intervalo de tiempo
-        setInterval(getSensorData, 60000); // Cada 1 minuto
-        window.onload = getSensorData;
-  </script>
+
+        async function getSensorData2(selectedDate) {
+            try {
+
+                const selectedDateTime = new Date(selectedDate);
+
+                const sensorDataCollection = collection(db, 'sensors_dataN3');
+                const q = query(sensorDataCollection, orderBy('date'));
+                const querySnapshot = await getDocs(q);
+
+                sensorData2 = [];
+
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const documentDateTime = data.date.toDate();
+
+                    if (selectedDateTime.toDateString() === documentDateTime.toDateString()) {
+
+                        if (documentDateTime.getMinutes() % 5 === 0) {
+                            sensorData2.push(data);
+                        }
+                    }
+                });
+
+                updateCharts2(sensorData2.slice(0, 100));
+            } catch (error) {
+                console.error('Error al obtener los datos del sensor de Datos del Suelo:', error);
+            }
+        }
+
+        function loadMoreData2() {
+            const newData = sensorData2.slice(currentIndex2, currentIndex2 + 100);
+            updateCharts2(newData);
+            currentIndex2 += 100;
+            toggleLoadMoreButton2();
+        }
+
+        function toggleLoadMoreButton2() {
+            const loadMoreButton = document.getElementById('loadMoreButton2');
+            if (currentIndex2 < sensorData2.length) {
+                loadMoreButton.style.display = 'block';
+            } else {
+                loadMoreButton.style.display = 'none';
+            }
+        }
+
+        function updateCharts2(data) {
+            if (soilHumidityChart) {
+                soilHumidityChart.destroy();
+            }
+
+            const dateLabels = data.map(item => item.date.toDate().toLocaleString());
+            const soilHumidityData = data.map(item => item.moisture);
+
+            const soilHumidityChartCtx = document.getElementById('soilHumidityChart').getContext('2d');
+
+            soilHumidityChart = new Chart(soilHumidityChartCtx, {
+                type: 'line',
+                data: {
+                    labels: dateLabels,
+                    datasets: [{
+                        label: 'Humedad del Suelo (%)',
+                        data: soilHumidityData,
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        zoom: {
+                            pan: {
+                                enabled: true,
+                                mode: 'x',
+                                rangeMin: { x: 0 },
+                                rangeMax: { x: null }
+                            },
+                            zoom: {
+                                wheel: {
+                                    enabled: true,
+                                },
+                                pinch: {
+                                    enabled: true
+                                },
+                                mode: 'x',
+                                rangeMin: { x: 0 },
+                                rangeMax: { x: null }
+                            }
+                        }
+                    }
+                }
+            });
+
+            toggleLoadMoreButton2();
+        }
+
+        async function getSensorData3(selectedDate) {
+            try {
+                const selectedDateTime = new Date(selectedDate);
+
+                const sensorDataCollection = collection(db, 'sensors_dataN3');
+                const q = query(sensorDataCollection, orderBy('date'));
+                const querySnapshot = await getDocs(q);
+
+                sensorData3 = [];
+
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const documentDateTime = data.date.toDate();
+                    if (selectedDateTime.toDateString() === documentDateTime.toDateString()) {
+
+                        if (documentDateTime.getMinutes() % 5 === 0) {
+                            sensorData3.push(data);
+                        }
+                    }
+                });
+
+
+                updateCharts3(sensorData3.slice(0, 100));
+            } catch (error) {
+                console.error('Error al obtener los datos del sensor de Intensidad de la Luz:', error);
+            }
+        }
+
+        function loadMoreData3() {
+            const newData = sensorData3.slice(currentIndex3, currentIndex3 + 100);
+            updateCharts3(newData);
+            currentIndex3 += 100;
+            toggleLoadMoreButton3();
+        }
+
+        function toggleLoadMoreButton3() {
+            const loadMoreButton = document.getElementById('loadMoreButton3');
+            if (currentIndex3 < sensorData3.length) {
+                loadMoreButton.style.display = 'block';
+            } else {
+                loadMoreButton.style.display = 'none';
+            }
+        }
+
+        function updateCharts3(data) {
+            if (lightChart) {
+                lightChart.destroy();
+            }
+
+            const dateLabels = data.map(item => item.date.toDate().toLocaleString());
+            const lightData = data.map(item => item.lux);
+
+            const lightChartCtx = document.getElementById('lightChart').getContext('2d');
+
+            lightChart = new Chart(lightChartCtx, {
+                type: 'line',
+                data: {
+                    labels: dateLabels,
+                    datasets: [{
+                        label: 'Intensidad de Luz',
+                        data: lightData,
+                        backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                        borderColor: 'rgba(255, 206, 86, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        zoom: {
+                            pan: {
+                                enabled: true,
+                                mode: 'x',
+                                rangeMin: { x: 0 },
+                                rangeMax: { x: null }
+                            },
+                            zoom: {
+                                wheel: {
+                                    enabled: true,
+                                },
+                                pinch: {
+                                    enabled: true
+                                },
+                                mode: 'x',
+                                rangeMin: { x: 0 },
+                                rangeMax: { x: null }
+                            }
+                        }
+                    }
+                }
+            });
+
+            toggleLoadMoreButton3();
+        }
+
+        let GoBackBtn = document.getElementById('gobackbutton');
+        let GoBack = () => {
+            window.history.back();
+        }
+        GoBackBtn.addEventListener('click', GoBack);
+
+        let ApplyDate1 = () => {
+            let selectedDate = document.getElementById('datePicker1').value;
+            getSensorData1(selectedDate);
+        }
+        let ApplyDateBtn1 = document.getElementById('applyDateBtn1');
+        ApplyDateBtn1.addEventListener('click', ApplyDate1);
+
+        let loadMoreButton1 = document.getElementById('loadMoreButton1');
+        loadMoreButton1.addEventListener('click', loadMoreData1);
+
+        let ApplyDate2 = () => {
+            let selectedDate = document.getElementById('datePicker2').value;
+            getSensorData2(selectedDate);
+        }
+        let ApplyDateBtn2 = document.getElementById('applyDateBtn2');
+        ApplyDateBtn2.addEventListener('click', ApplyDate2);
+
+        let loadMoreButton2 = document.getElementById('loadMoreButton2');
+        loadMoreButton2.addEventListener('click', loadMoreData2);
+
+
+        let ApplyDate3 = () => {
+            let selectedDate = document.getElementById('datePicker3').value;
+            getSensorData3(selectedDate);
+        }
+        let ApplyDateBtn3 = document.getElementById('applyDateBtn3');
+        ApplyDateBtn3.addEventListener('click', ApplyDate3);
+
+
+        let loadMoreButton3 = document.getElementById('loadMoreButton3');
+        loadMoreButton3.addEventListener('click', loadMoreData3);
+
+        async function checkSwitchState() {
+            try {
+                const docSnap = await getDoc(doc(db, "Settings", "switchState"));
+                const switchState = docSnap.data().switchState;
+                toggleDarkMode(switchState);
+            } catch (error) {
+                console.error("Error al obtener el estado del interruptor desde Firestore:", error);
+            }
+        }
+
+
+        window.onload = function () {
+            checkSwitchState();
+        };
+
+        async function toggleDarkMode(darkModeEnabled) {
+            if (darkModeEnabled) {
+
+                document.body.classList.add('dark-mode');
+                document.body.classList.remove('light-mode');
+
+                applyDarkModeStyles();
+            } else {
+
+                document.body.classList.remove('dark-mode');
+                document.body.classList.add('light-mode');
+
+                applyLightModeStyles();
+            }
+        }
+
+        function applyDarkModeStyles() {
+            const container = document.querySelector('.container');
+            container.classList.add('dark-mode');
+            container.classList.remove('light-mode');
+
+            const h2Elements = document.querySelectorAll('h2');
+            h2Elements.forEach(element => {
+                element.style.color = '#fff';
+            });
+
+            const labelElements = document.querySelectorAll('label');
+            labelElements.forEach(element => {
+                element.style.color = '#fff';
+            });
+        }
+
+        function applyLightModeStyles() {
+            const container = document.querySelector('.container');
+            container.classList.remove('dark-mode');
+            container.classList.add('light-mode');
+
+            const h2Elements = document.querySelectorAll('h2');
+            h2Elements.forEach(element => {
+                element.style.color = '#000';
+            });
+
+            const labelElements = document.querySelectorAll('label');
+            labelElements.forEach(element => {
+                element.style.color = '#000';
+            });
+        }
+
+
+
+
+    </script>
 </body>
+
 </html>
