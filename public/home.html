@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
   <link rel="icon" type="image/png" href="plant.png">
   <link rel="stylesheet" type="text/css" href="style2.css">
+  <script src="https://cdn.jsdelivr.net/npm/openai/dist/openai-browser.min.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -220,12 +221,381 @@
       color: #000;
 
     }
+
     span {
       color: #000;
 
-      
+
     }
 
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f0f0f0;
+      transition: background-color 0.5s ease;
+      position: relative;
+      min-height: 100vh;
+    }
+
+    .topnav {
+      background-color: #04aa2e;
+      overflow: hidden;
+      padding: 10px;
+      text-align: center;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+    }
+
+    .topnav h1 {
+      color: white;
+      margin: 0;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 20px auto;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 10px;
+
+      color: #333;
+
+    }
+
+    .icon {
+      font-size: 36px;
+      margin-bottom: 10px;
+    }
+
+    .value {
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .unit {
+      font-size: 16px;
+      color: #888;
+    }
+
+    .dashboard {
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+    }
+
+    .dashboard-item {
+      width: 45%;
+      background-color: #f9f9f9;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+
+    .btn-tendencias {
+      background-color: #1e90ff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      font-size: 16px;
+      outline: none;
+    }
+
+    .btn-tendencias:hover {
+      background-color: #007bff;
+    }
+
+    .toggle-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-around;
+    }
+
+    .toggle-button {
+      background-color: #ccc;
+      border: none;
+      color: #333;
+      padding: 10px 20px;
+      margin: 5px;
+      border-radius: 5px;
+      cursor: pointer;
+      outline: none;
+    }
+
+    .toggle-button.selected {
+      background-color: #04aa2e;
+      color: white;
+    }
+
+    .chat-button {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: white;
+      color: #28a745;
+      border: none;
+      border-radius: 50%;
+      width: 100px;
+      height: 100px;
+      font-size: 14px;
+      cursor: pointer;
+      z-index: 999;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 0 12px;
+    }
+
+    .button-icon {
+      width: 70px;
+
+      height: auto;
+
+      margin-right: 5px;
+
+    }
+
+
+    .chat-window {
+      position: fixed;
+      bottom: 100px;
+      right: 20px;
+      width: 300px;
+      height: 400px;
+      background-color: white;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      display: none;
+      z-index: 999;
+      transition: background-color 0.5s ease;
+
+    }
+
+
+    .chat-window.light-mode {
+      background-color: white;
+
+    }
+
+
+    .chat-window.dark-mode {
+      background-color: rgb(41, 39, 39);
+
+    }
+
+
+
+    .chat-float-icon {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 50px;
+      height: 50px;
+      background-color: #28a745;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      z-index: 1000;
+    }
+
+
+    .chat-header {
+      background-color: #28a745;
+
+      color: white;
+      padding: 10px;
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+
+    .close-chat-button {
+      background-color: transparent;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+
+    .chat-body {
+      height: calc(100% - 90px);
+      max-height: calc(100% - 90px);
+      overflow-y: auto;
+      padding: 10px;
+    }
+
+
+    .chat-input {
+      padding: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+
+    .chat-input input {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      margin-right: 10px;
+    }
+
+
+    .send-message-button {
+      background-color: #28a745;
+
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+
+    .message {
+      text-align: left;
+      margin-bottom: 10px;
+
+    }
+
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .message {
+      animation: fadeIn 0.5s ease forwards;
+    }
+
+    body.light-mode {
+      background-color: #f0f0f0;
+      color: #333;
+    }
+
+
+    body.dark-mode {
+      background-color: #333;
+      color: #fff;
+    }
+
+    .container.light-mode {
+      background-color: #fff;
+      color: #333;
+    }
+
+    .container.dark-mode {
+      background-color: #222;
+      color: #fff;
+    }
+
+    h2.light-mode {
+      color: #333;
+    }
+
+    h2.dark-mode {
+      color: #fff;
+    }
+
+    #lastUpdateDate.light-mode {
+      color: #888;
+    }
+
+    #lastUpdateDate.dark-mode {
+      color: #ddd;
+    }
+
+    .value {
+      color: #000;
+
+    }
+
+    .plant-name {
+      color: #000;
+
+    }
+
+    label {
+      color: #000;
+
+    }
+
+    .dashboard-item {
+      margin-bottom: 20px;
+    }
+
+    .clock-input {
+      border: none;
+      border-radius: 10px;
+      padding: 10px;
+      font-size: 18px;
+      font-weight: bold;
+      background-color: #f0f0f0;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .clock-input:focus {
+      outline: none;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .dashboard-item label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .toggle-buttons {
+      display: flex;
+      justify-content: space-around;
+    }
+
+    .toggle-button {
+      background-color: #f1f1f1;
+      border: none;
+      color: #333;
+      padding: 15px 32px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      margin: 4px 2px;
+      cursor: pointer;
+      border-radius: 12px;
+      transition: background-color 0.3s ease;
+    }
+
+    .toggle-button:hover {
+      background-color: #ddd;
+    }
   </style>
 
   <script>
@@ -237,7 +607,7 @@
 
     });
   </script>
-  <script src="env.js"></script>
+  <!-- <script src="public/env.js"></script> -->
 </head>
 
 <body>
@@ -271,6 +641,41 @@
     </div>
   </div>
 
+  <div class="container">
+    <h2>Programación de Riego</h2>
+    <div class="dashboard">
+      <div class="dashboard-item">
+        <label for="watering-time">Hora de Riego 01:</label>
+        <input type="time" id="watering-time" class="clock-input">
+      </div>
+      <div class="dashboard-item">
+        <label for="watering-time2">Hora de Riego 02:</label>
+        <input type="time" id="watering-time2" class="clock-input">
+      </div>
+      <div class="dashboard-item">
+        <label for="watering-time3">Hora de Riego 03:</label>
+        <input type="time" id="watering-time3" class="clock-input">
+      </div>
+    </div>
+    <div class="dashboard">
+      <div class="dashboard-item">
+        <div><label for="days">Días de riego:</label></div>
+        <div class="toggle-buttons">
+          <button class="toggle-button" id="lunes">Lunes</button>
+          <button class="toggle-button" id="martes">Martes</button>
+          <button class="toggle-button" id="miercoles">Miércoles</button>
+          <button class="toggle-button" id="jueves">Jueves</button>
+          <button class="toggle-button" id="viernes">Viernes</button>
+          <button class="toggle-button" id="sabado">Sábado</button>
+          <button class="toggle-button" id="domingo">Domingo</button>
+        </div>
+      </div>
+    </div>
+    <div class="dashboard">
+      <button id="save-watering-schedule" class="btn-tendencias">Guardar</button>
+    </div>
+  </div>
+
   <!-- <form id="wifiForm" class="container" style="display: none;" novalidate>
     <h2>Configuración de WI-FI</h2>
     <div class="form-group">
@@ -290,10 +695,13 @@
       <button id="cancelWifiButton" class="btn btn-danger">Cancelar</button>
     </div>
   </form> -->
-  
+
 
 
   <script type="module">
+
+
+
     let UserCreds = JSON.parse(sessionStorage.getItem("user-creds"));
     let UserInfo = JSON.parse(sessionStorage.getItem("user-info"));
 
@@ -398,22 +806,223 @@
 
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
-    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, collection, orderBy, addDoc, query, limit, getDocs, getDoc, doc, setDoc, serverTimestamp, deleteDoc, Timestamp, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
-      apiKey: window.env.API_KEY,
-      authDomain: window.env.AUTH_DOMAIN,
-      databaseURL: window.env.DATABASE_URL,
-      projectId: window.env.PROJECT_ID,
-      storageBucket: window.env.STORAGE_BUCKET,
-      messagingSenderId: window.env.MESSAGING_SENDER_ID,
-      appId: window.env.APP_ID,
-      measurementId: window.env.MEASUREMENT_ID
-    };
-
+            apiKey: "AIzaSyAtOj7REqncVDvnF4Ltjz--SJRrs-pfOgg",
+            authDomain: "greensense-d1a08.firebaseapp.com",
+            databaseURL: "https://greensense-d1a08-default-rtdb.firebaseio.com",
+            projectId: "greensense-d1a08",
+            storageBucket: "greensense-d1a08.appspot.com",
+            messagingSenderId: "314353204814",
+            appId:"1:314353204814:web:a5c41bf841a1511a69cd1f",
+            measurementId: "G-CK4PCZD6B0"
+        };
+        
     const app = initializeApp(firebaseConfig);
     const analytics = getAnalytics();
     const db = getFirestore();
+
+
+    async function getLastRiego() {
+      try {
+        const options = { timeZone: 'America/Santo_Domingo' };
+        const currentDay = normalizeText(new Date().toLocaleString('es-ES', { weekday: 'long', ...options }).toLowerCase());
+        const currentHourString = new Date().toLocaleString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false, ...options });
+
+        const docRef = doc(db, "RiegoN1", "schedule1");
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          const selectedDays = data.selectedDays || [];
+          const normalizedSelectedDays = selectedDays.map(day => normalizeText(day));
+
+          if (normalizedSelectedDays.includes(currentDay)) {
+            const wateringTime = data.wateringTime;
+            const [wateringHour, wateringMinute] = wateringTime.split(':').map(Number);
+            const [currentHour, currentMinute] = currentHourString.split(':').map(Number);
+
+            if (wateringHour === currentHour && wateringMinute === currentMinute) {
+              const currentState = data.state;
+
+              if (currentState !== "on") {
+                await setDoc(docRef, { state: "on" }, { merge: true });
+              }
+            } else {
+              await setDoc(docRef, { state: "off" }, { merge: true });
+            }
+          } else {
+            await setDoc(docRef, { state: "off" }, { merge: true });
+          }
+        } else {
+          console.log("No se encontró la programación de riego en Firestore.");
+        }
+
+        const lastIrrigationConfig = docSnap.data();
+
+        if (lastIrrigationConfig) {
+          const mensajeAI = `Última programación de riego: \nHora de Riego 01: ${lastIrrigationConfig.wateringTime} 
+            \nHora de Riego 02: ${lastIrrigationConfig.wateringTime2} \nHora de Riego 03: ${lastIrrigationConfig.wateringTime3}
+             \nDías de Riego: ${lastIrrigationConfig.selectedDays}`;
+          await saveMessage('Sensors2', mensajeAI);
+
+          const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${apiKey.apiKey}`,
+            },
+            body: JSON.stringify({
+              model: "gpt-3.5-turbo",
+              messages: [{ role: "user", content: mensajeAI }],
+              max_tokens: 300,
+            }),
+          });
+
+          if (!response.ok) {
+            console.error('Error al solicitar respuesta de la IA:', response.status);
+            return;
+          }
+        }
+      } catch (error) {
+        console.error("Error al verificar y establecer el estado de riego:", error);
+      }
+    }
+
+    const apiKey = {
+      apiKey: "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"
+    }
+
+    document.querySelectorAll('.toggle-button').forEach(button => {
+      button.addEventListener('click', () => {
+        button.classList.toggle('selected');
+      });
+    });
+    async function saveMessage(sender, message) {
+      try {
+        const timestamp = new Date();
+        await setDoc(doc(db, 'chatHistory', timestamp.getTime().toString()), {
+          sender: sender,
+          message: message,
+          timestamp: timestamp
+        });
+      } catch (error) {
+        console.error('Error al guardar el mensaje en Firestore:', error);
+      }
+    }
+
+    async function getWateringSchedule() {
+      try {
+        const docRef = doc(db, "RiegoN1", "schedule1");
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          document.getElementById('watering-time').value = data.wateringTime;
+          document.getElementById('watering-time2').value = data.wateringTime2;
+          document.getElementById('watering-time3').value = data.wateringTime3;
+
+          const selectedDays = data.selectedDays || [];
+          selectedDays.forEach(day => {
+            document.getElementById(day).classList.add('selected');
+          });
+
+        } else {
+          console.log("No se encontró la programación de riego en Firestore.");
+        }
+      } catch (error) {
+        console.error("Error obteniendo la programación de riego:", error);
+      }
+    }
+
+    async function saveWateringSchedule() {
+      const wateringTime = document.getElementById('watering-time').value;
+      const wateringTime2 = document.getElementById('watering-time2').value;
+      const wateringTime3 = document.getElementById('watering-time3').value;
+
+      const selectedDays = Array.from(document.querySelectorAll('.toggle-button.selected')).map(button => button.id);
+
+      try {
+        const docRef = doc(db, "RiegoN1", "schedule1");
+        await setDoc(docRef, { wateringTime, wateringTime2, wateringTime3, selectedDays });
+        console.log("Programación de riego guardada en Firestore.");
+        alert("Horario de Riego Guardado!");
+      } catch (error) {
+        console.error("Error guardando la programación de riego:", error);
+      }
+    }
+
+
+    document.getElementById('save-watering-schedule').addEventListener('click', saveWateringSchedule);
+
+    function normalizeText(text) {
+      return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    }
+
+    async function checkAndSetIrrigationState() {
+      try {
+
+        const options = { timeZone: 'America/Santo_Domingo' };
+        const currentDay = normalizeText(new Date().toLocaleString('es-ES', { weekday: 'long', ...options }).toLowerCase());
+        const currentHourString = new Date().toLocaleString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false, ...options });
+
+
+        const docRef = doc(db, "RiegoN1", "schedule1");
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          const selectedDays = data.selectedDays || [];
+
+
+          const normalizedSelectedDays = selectedDays.map(day => normalizeText(day));
+
+          if (normalizedSelectedDays.includes(currentDay)) {
+            const wateringTime = data.wateringTime;
+
+
+            const [wateringHour, wateringMinute] = wateringTime.split(':').map(Number);
+            const [currentHour, currentMinute] = currentHourString.split(':').map(Number);
+
+
+            if (wateringHour === currentHour && wateringMinute === currentMinute) {
+
+              const currentState = data.state;
+
+
+              if (currentState !== "on") {
+                await setDoc(docRef, { state: "on" }, { merge: true });
+              }
+            } else {
+
+              await setDoc(docRef, { state: "off" }, { merge: true });
+            }
+          } else {
+
+            await setDoc(docRef, { state: "off" }, { merge: true });
+          }
+        } else {
+          console.log("No se encontró la programación de riego en Firestore.");
+        }
+      } catch (error) {
+        console.error("Error al verificar y establecer el estado de riego:", error);
+      }
+    }
+
+    async function programWateringDays(selectedDays) {
+      try {
+
+        const docRef = doc(db, "RiegoN1", "schedule1");
+
+        await setDoc(docRef, { selectedDays }, { merge: true });
+      } catch (error) {
+        console.error("Error al programar los días de riego:", error);
+      }
+    }
+
+    setInterval(checkAndSetIrrigationState, 2000);
+    window.addEventListener('load', getLastRiego)
+    window.addEventListener('load', getWateringSchedule)
 
     async function saveSwitchState() {
       const switchState = document.getElementById('darkModeSwitch').checked;

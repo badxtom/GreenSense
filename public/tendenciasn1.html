@@ -179,9 +179,7 @@
             <canvas id="humidityChart" width="400" height="200"></canvas>
             <button id="loadMoreButton1" style="display: none;">Cargar más</button>
         </div>
-
         <hr>
-
         <div class="date-picker-container">
             <div class="input-container">
                 <label for="datePicker2">Seleccionar Fecha:</label>
@@ -249,31 +247,20 @@
 
         async function getSensorData1(selectedDate) {
             try {
-
                 const selectedDateTime = new Date(selectedDate);
-
-
                 const sensorDataCollection = collection(db, 'sensors_dataN1');
                 const q = query(sensorDataCollection, orderBy('date'));
                 const querySnapshot = await getDocs(q);
-
-
                 sensorData1 = [];
-
                 querySnapshot.forEach((doc) => {
                     const data = doc.data();
-
                     const documentDateTime = data.date.toDate();
-
                     if (selectedDateTime.toDateString() === documentDateTime.toDateString()) {
-
-                        if (documentDateTime.getMinutes() % 5 === 0) {
+                        if (documentDateTime.getMinutes() % 30 === 0) {
                             sensorData1.push(data);
                         }
                     }
                 });
-
-
                 updateCharts1(sensorData1.slice(0, 100));
             } catch (error) {
                 console.error('Error al obtener los datos del sensor de Condición del Nivel 1:', error);
@@ -416,7 +403,7 @@
 
                     if (selectedDateTime.toDateString() === documentDateTime.toDateString()) {
 
-                        if (documentDateTime.getMinutes() % 5 === 0) {
+                        if (documentDateTime.getMinutes() % 30 === 0) {
                             sensorData2.push(data);
                         }
                     }
@@ -514,7 +501,7 @@
                     const documentDateTime = data.date.toDate();
                     if (selectedDateTime.toDateString() === documentDateTime.toDateString()) {
 
-                        if (documentDateTime.getMinutes() % 5 === 0) {
+                        if (documentDateTime.getMinutes() % 30 === 0) {
                             sensorData3.push(data);
                         }
                     }
