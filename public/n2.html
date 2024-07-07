@@ -931,11 +931,10 @@
 
         async function programWateringTime(sender, message) {
             try {
-
                 const senderLowerCase = sender.toLowerCase();
                 const messageLowerCase = message.toLowerCase();
 
-                const horaRegex = /\b\d{1,2}:\d{1,2}\b/;
+                const horaRegex = /\b\d{1,2}:\d{1,2}\s?(am|pm)?\b/gi;
                 const diasRegex = /\b(lunes|martes|miércoles|miercoles|jueves|viernes|sábado|sabado|domingo)\b/g;
 
                 const configurarRegex = /\b(configurar|configura|programa|programar|establece|establecer|cambia|cambiar|pon|poner|agregar|agrega)\b/;
@@ -943,19 +942,17 @@
                 const diasRiegoRegex = /\bdías de riego|dias de riego|dia de riego|día de riego|los dias de riego|los días de riego\b/;
 
                 if (senderLowerCase === "agricultor" && configurarRegex.test(messageLowerCase) && (riegoRegex.test(messageLowerCase) || diasRiegoRegex.test(messageLowerCase))) {
-
                     let horaRiego = null;
                     let diasRiego = [];
 
-                    if (horaRegex.test(messageLowerCase)) {
-
-                        horaRiego = convertirFormatoHora(messageLowerCase.match(horaRegex)[0]);
+                    const horaMatch = messageLowerCase.match(horaRegex);
+                    if (horaMatch) {
+                        horaRiego = convertirFormatoHora(horaMatch[0]);
                     }
 
                     const diasRiegoMatch = messageLowerCase.match(diasRegex);
                     if (diasRiegoMatch) {
                         diasRiego = diasRiegoMatch.map(dia => {
-
                             return dia.replace(/[áéíóú]/g, match => {
                                 const accents = 'áéíóú';
                                 const accentsOut = 'aeiou';
@@ -966,32 +963,29 @@
                     }
 
                     if (horaRiego) {
-
-                        await programWateringTimeHelper("wateringTime", horaRiego);
-                        console.log(`Hora de riego 01 programada por Agricultor: ${horaRiego}`);
-                    }
-
-                    if (messageLowerCase.includes("riego 02")) {
-
-                        await programWateringTimeHelper("wateringTime2", horaRiego);
-                        console.log(`Hora de riego 02 programada por Agricultor: ${horaRiego}`);
-                    }
-
-                    if (messageLowerCase.includes("riego 03")) {
-
-                        await programWateringTimeHelper("wateringTime3", horaRiego);
-                        console.log(`Hora de riego 03 programada por Agricultor: ${horaRiego}`);
+                        if (messageLowerCase.includes("riego 01")) {
+                            await programWateringTimeHelper("wateringTime", horaRiego);
+                            console.log(`Hora de riego 01 programada por Agricultor: ${horaRiego}`);
+                        } else if (messageLowerCase.includes("riego 02")) {
+                            await programWateringTimeHelper("wateringTime2", horaRiego);
+                            console.log(`Hora de riego 02 programada por Agricultor: ${horaRiego}`);
+                        } else if (messageLowerCase.includes("riego 03")) {
+                            await programWateringTimeHelper("wateringTime3", horaRiego);
+                            console.log(`Hora de riego 03 programada por Agricultor: ${horaRiego}`);
+                        } else {
+                            await programWateringTimeHelper("wateringTime", horaRiego);
+                            console.log(`Hora de riego 01 programada por Agricultor: ${horaRiego}`);
+                        }
                     }
 
                     if (diasRiego.length > 0) {
-
                         await programWateringDays(diasRiego);
                         console.log(`Días de riego programados por Agricultor: ${diasRiego}`);
                     }
 
                 } else {
                     // Si no se proporciona una hora de riego o días de riego válidos, responder con un mensaje de ayuda
-                    // const mensajeAI = "Para configurar la hora de riego y los días de riego, por favor incluye la hora en formato HH:MM y los días de la semana. Por ejemplo: 'Configurar hora de riego 01 a las 08:00 para los lunes, martes'.";
+                    // const mensajeAI = "Para configurar la hora de riego y los días de riego, por favor incluye la hora en formato HH:MM AM/PM y los días de la semana. Por ejemplo: 'Configurar hora de riego 01 a las 08:00 AM para los lunes, martes'.";
                     // await saveMessage("IA Gardener", mensajeAI);
                     // console.log("Mensaje de ayuda enviado por IA Gardener:", mensajeAI);
                 }
@@ -1016,7 +1010,14 @@
 
 
         function convertirFormatoHora(hora) {
-            const [horas, minutos] = hora.split(":").map(Number);
+            const [time, period] = hora.split(" ");
+            let [horas, minutos] = time.split(":").map(Number);
+
+            if (period.toLowerCase() === "pm" && horas !== 12) {
+                horas += 12;
+            } else if (period.toLowerCase() === "am" && horas === 12) {
+                horas = 0;
+            }
 
             const horasFormateadas = horas.toString().padStart(2, "0");
             const minutosFormateados = minutos.toString().padStart(2, "0");
@@ -1116,9 +1117,9 @@
                 const senderLowerCase = sender.toLowerCase();
                 const messageLowerCase = message.toLowerCase();
 
-                const horaRegex = /\b\d{1,2}:\d{1,2}\b/;
+                const horaRegex = /\b\d{1,2}:\d{1,2}\s?(am|pm)?\b/i;
 
-                const configurarRegex = /\b(configurar|programar|establecer|cambiar)\b/;
+                const configurarRegex = /\b(configurar|programar|establecer|cambiar|pon|poner|ponga|configura|programa|establece|cambia)\b/;
                 const encendidoRegex = /\bhora de encendido|la hora de encendido\b/;
                 const apagadoRegex = /\bhora de apagado|la hora de apagado\b/;
 
@@ -1143,12 +1144,11 @@
                         await programLightScheduleHelper(horaEncendido, horaApagado);
                         console.log(`Horario de luz programado por Agricultor: Encendido ${horaEncendido}, Apagado ${horaApagado}`);
                     } else {
-                        // // Si no se proporciona una hora de encendido o apagado válida, responder con un mensaje de ayuda
-                        // const mensajeAI = "Para configurar la hora de encendido o apagado de la luz, por favor incluye la hora en formato HH:MM. Por ejemplo: 'Configurar hora de encendido de la luz para las 7:00' o 'Configurar hora de apagado de la luz a las 8:00'.";
+                        // Si no se proporciona una hora de encendido o apagado válida, responder con un mensaje de ayuda
+                        // const mensajeAI = "Para configurar la hora de encendido o apagado de la luz, por favor incluye la hora en formato HH:MM AM/PM. Por ejemplo: 'Configurar hora de encendido de la luz para las 7:00 AM' o 'Configurar hora de apagado de la luz a las 8:00 PM'.";
                         // await saveMessage("IA Gardener", mensajeAI);
                         // console.log("Mensaje de ayuda enviado por IA Gardener:", mensajeAI);
                     }
-
                 }
             } catch (error) {
                 console.error("Error al programar el horario de luz:", error);
