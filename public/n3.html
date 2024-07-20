@@ -431,14 +431,14 @@
                 <div class="unit">Luz (lux)</div>
             </div>
         </div>
-        <h2>Prueba de pH</h2>
+        <!-- <h2>Prueba de pH</h2>
         <div id="dashboard4" class="dashboard">
             <div class="dashboard-item">
                 <i class="fas fa-flask icon" style="color: #0431fc;"></i>
                 <div class="value" id="ph">--</div>
                 <div class="unit">pH</div>
             </div>
-        </div>
+        </div> -->
         <!-- <h2>Programación de Riego</h2>
         <div class="dashboard">
             <div class="dashboard-item">
@@ -834,27 +834,7 @@
         }
 
 
-        async function getSensorDataPh() {
-            try {
-
-                const sensorDataCollection = collection(db, 'sensor_Ph');
-                const q = query(sensorDataCollection, orderBy('date', 'desc'), limit(1));
-
-                const querySnapshot = await getDocs(q);
-
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    document.getElementById('ph').innerText = data.pH;
-                    const timestamp = data.date.toDate();
-                    const formattedDate = timestamp.toLocaleString();
-                });
-            } catch (error) {
-                console.error('Error al obtener los datos del sensor:', error);
-            }
-        }
-
         setInterval(getSensorData, 60000);
-        setInterval(getSensorDataPh, 30000);
         setInterval(checkAndSetIrrigationState, 2000);
         setInterval(checkAndSetLightState, 2000);
 
@@ -862,7 +842,6 @@
 
         window.onload = () => {
             getSensorData();
-            getSensorDataPh();
             checkAndSetIrrigationState();
             checkAndSetLightState();
             clearChatHistory();
@@ -1429,8 +1408,8 @@
                     const plantName2 = await getPlantName(2);
 
                     const ultimosDatosSensores = `Últimos datos de los sensores:\nTemperatura: ${data.temperature} °C\n` +
-                        `Humedad de la planta ${plantName1}: ${humidity1} %\n` +
-                        `Humedad de la planta ${plantName2}: ${humidity2} %\n` +
+                        `Humedad del suelo de la planta ${plantName1}: ${humidity1} %\n` +
+                        `Humedad del suelo de la planta ${plantName2}: ${humidity2} %\n` +
                         `pH: ${pH}\n` +
                         `Sensor LDR (Luz): ${light} lux\nFecha: ${formattedDate}\n` +
                         `Hora: ${currentHourString}`;
@@ -1486,7 +1465,7 @@
 
             const selectedTopics = {
                 "valor de la luz": ["luz", "iluminacion", "valor de la luz", "valor del ph", "ph", "nivel de ph", "valor de ph", "niveles de ph", 'ventilador', 'ventiladores'],
-                "recomendaciones sobre plantas": ["plantas", "recomendaciones de plantas", "consejos para plantas", "recomiendas", 'recomendar', 'recomendacion', 'recomendaciones'],
+                "recomendaciones sobre plantas": ["plantas", "recomendaciones de plantas", "consejos para plantas", "recomiendas sobre la planta", 'recomendar sobre la planta', 'recomendacion sobre la planta', 'recomendaciones sobre la planta'],
                 "análisis de datos": ["datos", "analisis de datos", "informacion de datos", "humedad", "temperatura", "ph", "regar", "rega", "dia", "dias", "riego", "agricultura", "cultivo", "invernadero", "mata", "matas"],
                 "significado": ["explicame los valores de los datos", "explica el valor de la luz", "ayuda con agricultura"],
                 "configuración": ["configuracion de riego", "configuracion de la luz", "configura los dias de riego", "eliminar", "elimina", "borra", "borrar", "quita", "quitar", "si", "no", 'gracias', 'acceso'],
@@ -1531,9 +1510,6 @@
             userMessageInput.value = '';
             showChatHistory();
         }
-
-
-
 
         async function getPreviousMessages() {
             try {

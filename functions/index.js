@@ -486,14 +486,12 @@ const getSensorData = async () => {
 
       const plantName1 = await getPlantName(1);
       const plantName2 = await getPlantName(2);
-      const plantName3 = await getPlantName(3);
 
       const ultimosDatosSensores = `Los datos de los sensores:\n` +
         `Temperatura: ${data.temperature} °C\n` +
         `Humedad: ${data.humidity} %\n` +
-        `Humedad de la planta ${plantName1}: ${data.moisture} %\n` +
-        `Humedad de la planta ${plantName2}: ${data.moisture2} %\n` +
-        `Humedad de la planta ${plantName3}: ${data.moisture} %\n` +
+        `Humedad del suelo de la planta ${plantName1}: ${data.moisture} %\n` +
+        `Humedad del suelo de la planta ${plantName2}: ${data.moisture2} %\n` +
         `Luz: ${((500 / data.lux).toFixed(2))*1000 } lux\n` +
         `pH: ${pH}\n` +
         `Fecha: ${formattedDate} \n` +
@@ -565,14 +563,12 @@ const getSensorData2 = async () => {
 
       const plantName1 = await getPlantName2(1);
       const plantName2 = await getPlantName2(2);
-      const plantName3 = await getPlantName2(3);
 
       const ultimosDatosSensores = `Los datos de los sensores:\n` +
         `Temperatura: ${data.temperature} °C\n` +
         `Humedad: ${data.humidity} %\n` +
-        `Humedad de la planta ${plantName1}: ${data.moisture} %\n` +
-        `Humedad de la planta ${plantName2}: ${data.moisture2} %\n` +
-        `Humedad de la planta ${plantName3}: ${data.moisture} %\n` +
+        `Humedad del suelo de la planta ${plantName1}: ${data.moisture} %\n` +
+        `Humedad del suelo de la planta ${plantName2}: ${data.moisture2} %\n` +
         `Luz: ${((500 / data.lux).toFixed(2))*1000 } lux\n` +
         `pH: ${pH}\n` +
         `Fecha: ${formattedDate} \n` +
@@ -644,14 +640,12 @@ const getSensorData3 = async () => {
 
       const plantName1 = await getPlantName3(1);
       const plantName2 = await getPlantName3(2);
-      const plantName3 = await getPlantName3(3);
 
       const ultimosDatosSensores = `Los datos de los sensores:\n` +
         `Temperatura: ${data.temperature} °C\n` +
         `Humedad: ${data.humidity} %\n` +
-        `Humedad de la planta ${plantName1}: ${data.moisture} %\n` +
-        `Humedad de la planta ${plantName2}: ${data.moisture2} %\n` +
-        `Humedad de la planta ${plantName3}: ${data.moisture} %\n` +
+        `Humedad del suelo de la planta ${plantName1}: ${data.moisture} %\n` +
+        `Humedad del suelo de la planta ${plantName2}: ${data.moisture2} %\n` +
         `Luz: ${((500 / data.lux).toFixed(2))*1000 } lux\n` +
         `pH: ${pH}\n` +
         `Fecha: ${formattedDate} \n` +

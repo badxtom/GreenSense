@@ -642,6 +642,14 @@
   </div>
 
   <div class="container">
+    <h2>Prueba de pH</h2>
+    <div id="dashboard4" class="dashboard">
+      <div class="dashboard-item">
+        <i class="fas fa-flask icon" style="color: #0431fc;"></i>
+        <div class="value" id="ph">--</div>
+        <div class="unit">pH</div>
+      </div>
+    </div>
     <h2>Programación de Riego</h2>
     <div class="dashboard">
       <div class="dashboard-item">
@@ -773,6 +781,7 @@
     }
     window.addEventListener('load', () => {
       loadDarkModePreference();
+      getSensorDataPh();
     });
 
     function adjustTextColor() {
@@ -809,16 +818,16 @@
     import { getFirestore, collection, orderBy, addDoc, query, limit, getDocs, getDoc, doc, setDoc, serverTimestamp, deleteDoc, Timestamp, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
-            apiKey: "AIzaSyAtOj7REqncVDvnF4Ltjz--SJRrs-pfOgg",
-            authDomain: "greensense-d1a08.firebaseapp.com",
-            databaseURL: "https://greensense-d1a08-default-rtdb.firebaseio.com",
-            projectId: "greensense-d1a08",
-            storageBucket: "greensense-d1a08.appspot.com",
-            messagingSenderId: "314353204814",
-            appId:"1:314353204814:web:a5c41bf841a1511a69cd1f",
-            measurementId: "G-CK4PCZD6B0"
-        };
-        
+      apiKey: "AIzaSyAtOj7REqncVDvnF4Ltjz--SJRrs-pfOgg",
+      authDomain: "greensense-d1a08.firebaseapp.com",
+      databaseURL: "https://greensense-d1a08-default-rtdb.firebaseio.com",
+      projectId: "greensense-d1a08",
+      storageBucket: "greensense-d1a08.appspot.com",
+      messagingSenderId: "314353204814",
+      appId: "1:314353204814:web:a5c41bf841a1511a69cd1f",
+      measurementId: "G-CK4PCZD6B0"
+    };
+
     const app = initializeApp(firebaseConfig);
     const analytics = getAnalytics();
     const db = getFirestore();
@@ -1070,6 +1079,29 @@
     //   const lastNetworkName = await getLastNetwork();
     //   lastNetworkSpan.textContent = lastNetworkName;
     // });
+
+
+
+    async function getSensorDataPh() {
+      try {
+
+        const sensorDataCollection = collection(db, 'sensor_Ph');
+        const q = query(sensorDataCollection, orderBy('date', 'desc'), limit(1));
+
+        const querySnapshot = await getDocs(q);
+
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          document.getElementById('ph').innerText = data.pH;
+          const timestamp = data.date.toDate();
+          const formattedDate = timestamp.toLocaleString();
+        });
+      } catch (error) {
+        console.error('Error al obtener los datos del sensor:', error);
+      }
+    }
+
+    setInterval(getSensorDataPh, 30000);
 
   </script>
 </body>
