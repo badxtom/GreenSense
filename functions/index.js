@@ -45,26 +45,37 @@ const checkAndSetIrrigationState = async () => {
 
       if (normalizedSelectedDays.includes(currentDay)) {
         const wateringTime = data.wateringTime;
-        const [wateringHour, wateringMinute] =
-          wateringTime
-              .split(":")
-              .map(Number);
-        const [currentHour, currentMinute] =
-          currentHourString
-              .split(":")
-              .map(Number);
+        const wateringTime2 = data.wateringTime2;
+        const wateringTime3 = data.wateringTime3;
 
-        if (wateringHour === currentHour &&
-          wateringMinute === currentMinute) {
-          const currentState = data.state;
-          if (currentState !== "on") {
+        const [wateringHour, wateringMinute] =
+          wateringTime.split(":").map(Number);
+        const [wateringHour2, wateringMinute2] =
+          wateringTime2.split(":").map(Number);
+        const [wateringHour3, wateringMinute3] =
+          wateringTime3.split(":").map(Number);
+
+        const [currentHour, currentMinute] =
+          currentHourString.split(":").map(Number);
+
+        if (
+          (wateringHour === currentHour && wateringMinute === currentMinute) ||
+          (wateringHour2 === currentHour && wateringMinute2 ===
+             currentMinute) ||
+          (wateringHour3 === currentHour && wateringMinute3 === currentMinute)
+        ) {
+          if (data.state !== "on") {
             await docRef.set({state: "on"}, {merge: true});
           }
         } else {
-          await docRef.set({state: "off"}, {merge: true});
+          if (data.state === "on") {
+            await docRef.set({state: "off"}, {merge: true});
+          }
         }
       } else {
-        await docRef.set({state: "off"}, {merge: true});
+        if (data.state === "on") {
+          await docRef.set({state: "off"}, {merge: true});
+        }
       }
     } else {
       console.log("No se encontró la programación de riego en Firestore.");
@@ -306,11 +317,11 @@ const saveMessage3 = async (sender, message) => {
   }
 };
 
-const sendAlertEmail = async (emails, subject, message) => {
+const sendAlertEmail = async (emails, subject, message, level) => {
   const msg = {
     to: emails,
     from: "alertgreensense@gmail.com",
-    subject: subject,
+    subject: `${subject} - ${level}`,
     text: message,
   };
 
@@ -335,20 +346,21 @@ const getUserEmails = async () => {
   }
 };
 
-const sendTemperatureAlertEmail = async (emails, temperature) => {
+const sendTemperatureAlertEmail = async (emails, temperature, level) => {
   const subject = "Alerta: Temperatura del sensor superó el límite";
   const message = `La temperatura reciente del sensor ha\n\n` +
-  `superado el límite establecido:\n\n` +
-    `Temperatura: ${temperature} °C`;
-  await sendAlertEmail(emails, subject, message);
+    `superado el límite establecido:\n\n` +
+    `Temperatura: ${temperature} °C\n\n` +
+    `Y se ha encendido el ventilador.`;
+  await sendAlertEmail(emails, subject, message, level);
 };
 
-const sendHumidityAlertEmail = async (emails, humidity) => {
+const sendHumidityAlertEmail = async (emails, humidity, level) => {
   const subject = "Alerta: Humedad del sensor superó el límite";
-  const message = `La humedad reciente del sensor ha\n\n`+
-  ` superado el límite establecido:\n\n` +
+  const message = `La humedad reciente del sensor ha\n\n` +
+    ` superado el límite establecido:\n\n` +
     `Humedad: ${humidity} %`;
-  await sendAlertEmail(emails, subject, message);
+  await sendAlertEmail(emails, subject, message, level);
 };
 
 
@@ -366,18 +378,20 @@ const checkSensorLimits = async () => {
 
       const temperatureLimit = 30;
       const humidityLimit = 90;
+      const level = "Nivel 1";
 
       if (data.temperature > temperatureLimit) {
         const temperatureEmails = await getUserEmails();
         if (temperatureEmails.length > 0) {
-          await sendTemperatureAlertEmail(temperatureEmails, data.temperature);
+          await sendTemperatureAlertEmail(temperatureEmails,
+              data.temperature, level);
         }
       }
 
       if (data.humidity > humidityLimit) {
         const humidityEmails = await getUserEmails();
         if (humidityEmails.length > 0) {
-          await sendHumidityAlertEmail(humidityEmails, data.humidity);
+          await sendHumidityAlertEmail(humidityEmails, data.humidity, level);
         }
       }
     });
@@ -400,18 +414,20 @@ const checkSensorLimits2 = async () => {
 
       const temperatureLimit = 30;
       const humidityLimit = 90;
+      const level = "Nivel 2";
 
       if (data.temperature > temperatureLimit) {
         const temperatureEmails = await getUserEmails();
         if (temperatureEmails.length > 0) {
-          await sendTemperatureAlertEmail(temperatureEmails, data.temperature);
+          await sendTemperatureAlertEmail(temperatureEmails,
+              data.temperature, level);
         }
       }
 
       if (data.humidity > humidityLimit) {
         const humidityEmails = await getUserEmails();
         if (humidityEmails.length > 0) {
-          await sendHumidityAlertEmail(humidityEmails, data.humidity);
+          await sendHumidityAlertEmail(humidityEmails, data.humidity, level);
         }
       }
     });
@@ -434,18 +450,21 @@ const checkSensorLimits3 = async () => {
 
       const temperatureLimit = 30;
       const humidityLimit = 90;
+      const level = "Nivel 3";
 
       if (data.temperature > temperatureLimit) {
         const temperatureEmails = await getUserEmails();
         if (temperatureEmails.length > 0) {
-          await sendTemperatureAlertEmail(temperatureEmails, data.temperature);
+          await sendTemperatureAlertEmail(temperatureEmails,
+              data.temperature, level);
         }
       }
 
       if (data.humidity > humidityLimit) {
         const humidityEmails = await getUserEmails();
         if (humidityEmails.length > 0) {
-          await sendHumidityAlertEmail(humidityEmails, data.humidity);
+          await sendHumidityAlertEmail(humidityEmails,
+              data.humidity, level);
         }
       }
     });
@@ -492,7 +511,7 @@ const getSensorData = async () => {
         `Humedad: ${data.humidity} %\n` +
         `Humedad del suelo de la planta ${plantName1}: ${data.moisture} %\n` +
         `Humedad del suelo de la planta ${plantName2}: ${data.moisture2} %\n` +
-        `Luz: ${((500 / data.lux).toFixed(2))*1000 } lux\n` +
+        `Luz: ${((500 / data.lux).toFixed(2)) * 1000} lux\n` +
         `pH: ${pH}\n` +
         `Fecha: ${formattedDate} \n` +
         `Hora: ${currentHourString}`;
@@ -512,7 +531,7 @@ const getSensorData = async () => {
             "Authorization": `Bearer ${apiKey}`,
           },
           body: JSON.stringify({
-            model: "gpt-3.5-turbo",
+            model: "gpt-4o",
             messages: [{role: "user", content: mensajeAI}],
             max_tokens: 150,
           }),
@@ -569,7 +588,7 @@ const getSensorData2 = async () => {
         `Humedad: ${data.humidity} %\n` +
         `Humedad del suelo de la planta ${plantName1}: ${data.moisture} %\n` +
         `Humedad del suelo de la planta ${plantName2}: ${data.moisture2} %\n` +
-        `Luz: ${((500 / data.lux).toFixed(2))*1000 } lux\n` +
+        `Luz: ${((500 / data.lux).toFixed(2)) * 1000} lux\n` +
         `pH: ${pH}\n` +
         `Fecha: ${formattedDate} \n` +
         `Hora: ${currentHourString}`;
@@ -589,7 +608,7 @@ const getSensorData2 = async () => {
             "Authorization": `Bearer ${apiKey2}`,
           },
           body: JSON.stringify({
-            model: "gpt-3.5-turbo",
+            model: "gpt-4o",
             messages: [{role: "user", content: mensajeAI}],
             max_tokens: 150,
           }),
@@ -646,7 +665,7 @@ const getSensorData3 = async () => {
         `Humedad: ${data.humidity} %\n` +
         `Humedad del suelo de la planta ${plantName1}: ${data.moisture} %\n` +
         `Humedad del suelo de la planta ${plantName2}: ${data.moisture2} %\n` +
-        `Luz: ${((500 / data.lux).toFixed(2))*1000 } lux\n` +
+        `Luz: ${((500 / data.lux).toFixed(2)) * 1000} lux\n` +
         `pH: ${pH}\n` +
         `Fecha: ${formattedDate} \n` +
         `Hora: ${currentHourString}`;
@@ -666,7 +685,7 @@ const getSensorData3 = async () => {
             "Authorization": `Bearer ${apiKey3}`,
           },
           body: JSON.stringify({
-            model: "gpt-3.5-turbo",
+            model: "gpt-4o",
             messages: [{role: "user", content: mensajeAI}],
             max_tokens: 150,
           }),

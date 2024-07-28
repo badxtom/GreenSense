@@ -156,7 +156,7 @@
             bottom: 100px;
             right: 20px;
             width: 300px;
-            height: 400px;
+            height: 450px;
             background-color: white;
             border: 1px solid #ccc;
             border-radius: 10px;
@@ -379,6 +379,28 @@
         .toggle-button:hover {
             background-color: #ddd;
         }
+
+        .loader {
+            width: 30px;
+            padding: 8px;
+            aspect-ratio: 1;
+            border-radius: 50%;
+            background: #25b09b;
+            --_m:
+                conic-gradient(#0000 10%, #000),
+                linear-gradient(#000 0 0) content-box;
+            -webkit-mask: var(--_m);
+            mask: var(--_m);
+            -webkit-mask-composite: source-out;
+            mask-composite: subtract;
+            animation: l3 1s infinite linear;
+        }
+
+        @keyframes l3 {
+            to {
+                transform: rotate(1turn)
+            }
+        }
     </style>
     <script src="env.js"></script>
 
@@ -502,6 +524,7 @@
         <div id="chatInput" class="chat-input">
             <input type="text" id="userMessage" placeholder="Escribe tu mensaje...">
             <button id="sendMessageButton" class="send-message-button">Enviar</button>
+            <div id="loader" class="loader" style="display: none;"></div>
         </div>
     </div>
 
@@ -890,6 +913,10 @@
             }
         });
 
+        window.addEventListener('beforeunload', (event) => {
+            clearChatHistory();
+        });
+
         async function saveMessage(sender, message) {
             try {
                 const timestamp = new Date();
@@ -1174,20 +1201,19 @@
                 });
 
                 if (!hasUserMessages && !hasBotMessages) {
-
                     const welcomeMessage = "¡Hola agricultor! ¿Cómo puedo ayudarte hoy?";
-                    const helpWateringTime = "Para programar hora y días de riego, por favor incluye la hora en formato HH:MM. Por ejemplo: 'Configurar hora de riego 01 a las 08:00', 'Configurar hora de riego 01 a las 08:00 para los lunes, martes' o 'Configurar los días de riego para los viernes."
-                    const helpdeleteWateringTime = "Para eliminar una hora de riego o días de riego, por favor incluye la referencia específica (01, 02 o 03 para la hora de riego y 'días de riego' para eliminar los días). Por ejemplo: 'Eliminar hora de riego 01' o 'Eliminar días de riego lunes, martes'"
+                    const helpWateringTime = "Para programar hora y días de riego, por favor incluye la hora en formato HH:MM. Por ejemplo: 'Configurar hora de riego 01 a las 08:00', 'Configurar hora de riego 01 a las 08:00 para los lunes, martes' o 'Configurar los días de riego para los viernes.'";
+                    const helpDeleteWateringTime = "Para eliminar una hora de riego o días de riego, por favor incluye la referencia específica (01, 02 o 03 para la hora de riego y 'días de riego' para eliminar los días). Por ejemplo: 'Eliminar hora de riego 01' o 'Eliminar días de riego lunes, martes.'";
                     displayBotResponse(welcomeMessage);
                     displayBotResponse(helpWateringTime);
-                    displayBotResponse(helpdeleteWateringTime);
+                    displayBotResponse(helpDeleteWateringTime);
                 } else {
                     querySnapshot.forEach((doc) => {
                         const data = doc.data();
                         if (data.sender !== "Sensors" && data.sender !== "Sensors2") {
                             const messageDiv = document.createElement('div');
                             messageDiv.classList.add('message');
-                            messageDiv.textContent = `${data.sender}: ${data.message}`;
+                            messageDiv.innerHTML = formatBotMessage(`${data.sender}: ${data.message}`);
                             chatBody.appendChild(messageDiv);
                         }
                     });
@@ -1257,49 +1283,51 @@
                     const timestamp = new Date();
                     const formattedDate = timestamp.toLocaleDateString("es-DO", options);
 
-                    const [turnOnHour, turnOnMinute] = turnOnTime.split(':').map(Number);
-                    const [turnOffHour, turnOffMinute] = turnOffTime.split(':').map(Number);
-                    const [currentHour, currentMinute] = currentHourString.split(':').map(Number);
+                    if (turnOnTime && turnOffTime) {
+                        const [turnOnHour, turnOnMinute] = turnOnTime.split(':').map(Number);
+                        const [turnOffHour, turnOffMinute] = turnOffTime.split(':').map(Number);
+                        const [currentHour, currentMinute] = currentHourString.split(':').map(Number);
 
-                    let newState = "off";
-                    if (currentHour === turnOnHour && currentMinute === turnOnMinute) {
-                        newState = "on";
-                    } else if ((currentHour > turnOffHour) || (currentHour === turnOffHour && currentMinute >= turnOffMinute)) {
-                        newState = "off";
-                    } else if (currentHour > turnOnHour || (currentHour === turnOnHour && currentMinute > turnOnMinute)) {
-                        newState = "on";
-                    }
-
-                    await setDoc(docRef, { state: newState }, { merge: true });
-
-                    const lastLightConfig = { turnOnTime, turnOffTime };
-
-                    if (lastLightConfig) {
-                        const mensajeAI = `Última programación de luz: \nHora de encendido: ${data.turnOnTime} 
-                        \nHora de apagado: ${data.turnOffTime}`;
-                        const fechaActual = `Fecha y hora actual: Fecha: ${formattedDate}\n` +
-                            `Hora: ${currentHourString}`;
-
-                        await saveMessage('Sensors2', mensajeAI);
-                        await saveMessage('Sensors2', fechaActual);
-
-                        const response = await fetch('https://api.openai.com/v1/chat/completions', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${apiKey.apiKey}`,
-                            },
-                            body: JSON.stringify({
-                                model: "gpt-3.5-turbo",
-                                messages: [{ role: "user", content: mensajeAI }],
-                                max_tokens: 300,
-                            }),
-                        });
-
-                        if (!response.ok) {
-                            console.error('Error al solicitar respuesta de la IA:', response.status);
-                            return;
+                        let newState = "off";
+                        if (currentHour === turnOnHour && currentMinute === turnOnMinute) {
+                            newState = "on";
+                        } else if ((currentHour > turnOffHour) || (currentHour === turnOffHour && currentMinute >= turnOffMinute)) {
+                            newState = "off";
+                        } else if (currentHour > turnOnHour || (currentHour === turnOnHour && currentMinute > turnOnMinute)) {
+                            newState = "on";
                         }
+
+                        await setDoc(docRef, { state: newState }, { merge: true });
+
+                        const lastLightConfig = { turnOnTime, turnOffTime };
+
+                        if (lastLightConfig) {
+                            const mensajeAI = `Última programación de luz: \nHora de encendido: ${data.turnOnTime} \nHora de apagado: ${data.turnOffTime}`;
+                            const fechaActual = `Fecha y hora actual: Fecha: ${formattedDate}\nHora: ${currentHourString}`;
+
+                            await saveMessage('Sensors2', mensajeAI);
+                            await saveMessage('Sensors2', fechaActual);
+
+                            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${apiKey.apiKey}`,
+                                },
+                                body: JSON.stringify({
+                                    model: "gpt-4o",
+                                    messages: [{ role: "user", content: mensajeAI }],
+                                    max_tokens: 400,
+                                }),
+                            });
+
+                            if (!response.ok) {
+                                console.error('Error al solicitar respuesta de la IA:', response.status);
+                                return;
+                            }
+                        }
+                    } else {
+                        console.log("Los tiempos de encendido y apagado no están definidos.");
                     }
                 } else {
                     console.log("No se encontró la programación de luz en Firestore.");
@@ -1308,6 +1336,7 @@
                 console.error("Error al verificar y establecer el estado de luz:", error);
             }
         }
+
 
 
         async function getLastRiego() {
@@ -1360,9 +1389,9 @@
                             'Authorization': `Bearer ${apiKey.apiKey}`,
                         },
                         body: JSON.stringify({
-                            model: "gpt-3.5-turbo",
+                            model: "gpt-4o",
                             messages: [{ role: "user", content: mensajeAI }],
-                            max_tokens: 300,
+                            max_tokens: 400,
                         }),
                     });
 
@@ -1398,6 +1427,7 @@
                 querySnapshot.forEach(async (doc) => {
                     const data = doc.data();
                     const temperature = data.temperature;
+                    const humidity = data.humidity;
                     const humidity1 = data.moisture;
                     const humidity2 = data.moisture2;
                     const light = ((500 / data.lux).toFixed(2)) * 1000
@@ -1407,11 +1437,14 @@
                     const plantName1 = await getPlantName(1);
                     const plantName2 = await getPlantName(2);
 
-                    const ultimosDatosSensores = `Últimos datos de los sensores:\nTemperatura: ${data.temperature} °C\n` +
+                    const ultimosDatosSensores = `Últimos datos de los sensores:\n` +
+                        `Temperatura: ${data.temperature} °C\n` +
+                        `Humedad ambiental: ${humidity} %\n` +
                         `Humedad del suelo de la planta ${plantName1}: ${humidity1} %\n` +
                         `Humedad del suelo de la planta ${plantName2}: ${humidity2} %\n` +
                         `pH: ${pH}\n` +
-                        `Sensor LDR (Luz): ${light} lux\nFecha: ${formattedDate}\n` +
+                        `Sensor LDR (Luz): ${light} lux\n` +
+                        `Fecha: ${formattedDate}\n` +
                         `Hora: ${currentHourString}`;
 
                     await saveMessage('Sensors2', ultimosDatosSensores);
@@ -1426,9 +1459,9 @@
                                 'Authorization': `Bearer ${apiKey.apiKey}`,
                             },
                             body: JSON.stringify({
-                                model: "gpt-3.5-turbo",
+                                model: "gpt-4o",
                                 messages: [{ role: "user", content: mensajeAI }],
-                                max_tokens: 300,
+                                max_tokens: 400,
                             }),
                         });
 
@@ -1451,11 +1484,21 @@
 
         async function sendMessage() {
             const userMessage = userMessageInput.value;
+
+            if (userMessage === '') {
+                alert('Por favor, escribe un mensaje antes de enviar.');
+                return;
+            }
+
+            // Limpiar el campo de mensaje, ocultar el botón de enviar y mostrar el loader
+            userMessageInput.value = '';
+            sendMessageButton.style.display = 'none';
+            document.getElementById('loader').style.display = 'block';
+
             await saveMessage('Agricultor', userMessage);
             const previousMessages = await getPreviousMessages();
             const context = previousMessages.map(message => `${message.sender}: ${message.message}`).join('\n');
 
-            // Función para normalizar el texto eliminando tildes y convirtiendo a minúsculas
             function normalizeText(text) {
                 return text
                     .toLowerCase()
@@ -1465,7 +1508,8 @@
 
             const selectedTopics = {
                 "valor de la luz": ["luz", "iluminacion", "valor de la luz", "valor del ph", "ph", "nivel de ph", "valor de ph", "niveles de ph", 'ventilador', 'ventiladores'],
-                "recomendaciones sobre plantas": ["plantas", "recomendaciones de plantas", "consejos para plantas", "recomiendas sobre la planta", 'recomendar sobre la planta', 'recomendacion sobre la planta', 'recomendaciones sobre la planta'],
+                "recomendaciones sobre plantas": ["plantas", "recomendaciones de plantas", "consejos para plantas", "recomiendas sobre la planta", 'recomendar sobre la planta', 'recomendacion sobre la planta', 'recomendaciones sobre la planta',
+                    'cuidado de la planta', 'recomendaciones sobre el cuidado de la planta'],
                 "análisis de datos": ["datos", "analisis de datos", "informacion de datos", "humedad", "temperatura", "ph", "regar", "rega", "dia", "dias", "riego", "agricultura", "cultivo", "invernadero", "mata", "matas"],
                 "significado": ["explicame los valores de los datos", "explica el valor de la luz", "ayuda con agricultura"],
                 "configuración": ["configuracion de riego", "configuracion de la luz", "configura los dias de riego", "eliminar", "elimina", "borra", "borrar", "quita", "quitar", "si", "no", 'gracias', 'acceso'],
@@ -1489,9 +1533,9 @@
                         'Authorization': `Bearer ${apiKey.apiKey}`,
                     },
                     body: JSON.stringify({
-                        model: "gpt-3.5-turbo",
+                        model: "gpt-4o",
                         messages: [{ role: "user", content: userMessage }, { role: "assistant", content: context }],
-                        max_tokens: 300,
+                        max_tokens: 1000,
                     }),
                 });
 
@@ -1500,6 +1544,7 @@
                     botResponse = responseData.choices[0].message.content.trim();
                 } else {
                     console.error('Error al solicitar respuesta del chatbot:', response.status);
+                    botResponse = 'Lo siento, hubo un error al procesar tu solicitud.';
                 }
             } else {
                 botResponse = "Lo siento, no puedo responder esa pregunta.";
@@ -1507,7 +1552,11 @@
 
             await saveMessage('AI Gardener', botResponse);
             displayBotResponse(botResponse);
-            userMessageInput.value = '';
+
+            // Volver a mostrar el botón de enviar y ocultar el loader
+            sendMessageButton.style.display = 'inline-block';
+            document.getElementById('loader').style.display = 'none';
+
             showChatHistory();
         }
 
@@ -1524,15 +1573,68 @@
             }
         }
 
-        function displayBotResponse(response) {
-
-            const chatBody = document.querySelector('.chat-body');
-            const botMessageElement = document.createElement('div');
-            botMessageElement.classList.add('message');
-
-            botMessageElement.textContent = response;
-            chatBody.appendChild(botMessageElement);
+        function displayBotResponse(message) {
+            const chatBody = document.getElementById('chatBody');
+            const botMessageDiv = document.createElement('div');
+            botMessageDiv.classList.add('message', 'bot-message');
+            botMessageDiv.innerHTML = formatBotMessage(message);
+            chatBody.appendChild(botMessageDiv);
         }
+
+        function formatBotMessage(message) {
+            const lines = message.split('\n');
+            let formattedMessage = '';
+            let inList = false;
+            let inOrderedList = false;
+
+            lines.forEach(line => {
+                // Eliminar signos de Markdown
+                line = line.replace(/#/g, '');
+                line = line.replace(/##/g, '');
+                line = line.replace(/###/g, '');
+                line = line.replace(/####/g, '');
+                line = line.replace(/-/g, '-');
+                line = line.replace(/\*/g, '');
+                line = line.replace(/_/g, '');
+
+                if (line.startsWith('1.')) {
+                    if (!inOrderedList) {
+                        formattedMessage += '<ol>';
+                        inOrderedList = true;
+                    }
+                    formattedMessage += `<li>${line.replace('1.', '').trim()}</li>`;
+                } else if (line.match(/^\d+\./)) { // Match lines that start with a number followed by a period
+                    if (!inOrderedList) {
+                        formattedMessage += '<ol>';
+                        inOrderedList = true;
+                    }
+                    formattedMessage += `<li>${line.trim()}</li>`;
+                } else if (line.startsWith('**')) {
+                    formattedMessage += `<strong>${line.replace(/\*\*/g, '').trim()}</strong>`;
+                } else {
+                    if (inList) {
+                        formattedMessage += '</ul>';
+                        inList = false;
+                    }
+                    if (inOrderedList) {
+                        formattedMessage += '</ol>';
+                        inOrderedList = false;
+                    }
+                    formattedMessage += `<p>${line.trim()}</p>`;
+                }
+            });
+
+            // Close any open lists
+            if (inList) {
+                formattedMessage += '</ul>';
+            }
+            if (inOrderedList) {
+                formattedMessage += '</ol>';
+            }
+
+            return formattedMessage;
+        }
+
 
         async function toggleDarkMode(darkModeEnabled) {
             if (darkModeEnabled) {

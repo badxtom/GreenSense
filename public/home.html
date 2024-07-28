@@ -642,7 +642,7 @@
   </div>
 
   <div class="container">
-    <h2>Prueba de pH</h2>
+    <h2>Última prueba de pH</h2>
     <div id="dashboard4" class="dashboard">
       <div class="dashboard-item">
         <i class="fas fa-flask icon" style="color: #0431fc;"></i>
@@ -970,11 +970,9 @@
 
     async function checkAndSetIrrigationState() {
       try {
-
         const options = { timeZone: 'America/Santo_Domingo' };
         const currentDay = normalizeText(new Date().toLocaleString('es-ES', { weekday: 'long', ...options }).toLowerCase());
         const currentHourString = new Date().toLocaleString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false, ...options });
-
 
         const docRef = doc(db, "RiegoN1", "schedule1");
         const docSnap = await getDoc(docRef);
@@ -983,32 +981,34 @@
           const data = docSnap.data();
           const selectedDays = data.selectedDays || [];
 
-
           const normalizedSelectedDays = selectedDays.map(day => normalizeText(day));
 
           if (normalizedSelectedDays.includes(currentDay)) {
             const wateringTime = data.wateringTime;
-
+            const wateringTime2 = data.wateringTime2;
+            const wateringTime3 = data.wateringTime3;
 
             const [wateringHour, wateringMinute] = wateringTime.split(':').map(Number);
+            const [wateringHour2, wateringMinute2] = wateringTime2.split(':').map(Number);
+            const [wateringHour3, wateringMinute3] = wateringTime3.split(':').map(Number);
+
             const [currentHour, currentMinute] = currentHourString.split(':').map(Number);
 
-
-            if (wateringHour === currentHour && wateringMinute === currentMinute) {
-
-              const currentState = data.state;
-
-
-              if (currentState !== "on") {
+            if ((wateringHour === currentHour && wateringMinute === currentMinute) ||
+              (wateringHour2 === currentHour && wateringMinute2 === currentMinute) ||
+              (wateringHour3 === currentHour && wateringMinute3 === currentMinute)) {
+              if (data.state !== "on") {
                 await setDoc(docRef, { state: "on" }, { merge: true });
               }
             } else {
-
-              await setDoc(docRef, { state: "off" }, { merge: true });
+              if (data.state === "on") {
+                await setDoc(docRef, { state: "off" }, { merge: true });
+              }
             }
           } else {
-
-            await setDoc(docRef, { state: "off" }, { merge: true });
+            if (data.state === "on") {
+              await setDoc(docRef, { state: "off" }, { merge: true });
+            }
           }
         } else {
           console.log("No se encontró la programación de riego en Firestore.");
@@ -1017,6 +1017,9 @@
         console.error("Error al verificar y establecer el estado de riego:", error);
       }
     }
+
+
+
 
     async function programWateringDays(selectedDays) {
       try {

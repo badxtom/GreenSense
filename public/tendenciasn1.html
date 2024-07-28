@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -187,6 +188,7 @@
         <h2>Datos del Suelo</h2>
         <div id="dashboard2" class="dashboard">
             <canvas id="soilHumidityChart" width="400" height="200"></canvas>
+            <canvas id="soilHumidityChart2" width="400" height="200"></canvas>
             <button id="loadMoreButton2" style="display: none;">Cargar más</button>
         </div>
 
@@ -382,10 +384,12 @@
             toggleLoadMoreButton1();
         }
 
+        let sensorDataMoisture1 = [];
+        let sensorDataMoisture2 = [];
+        let soilHumidityChart2;
 
         async function getSensorData2(selectedDate) {
             try {
-                // Convertir la fecha seleccionada a un objeto Date y sumar un día
                 let selectedDateTime = new Date(selectedDate);
                 selectedDateTime.setDate(selectedDateTime.getDate() + 1);
 
@@ -394,37 +398,46 @@
                 const sensorDataCollection = collection(db, 'sensors_dataN1');
                 const q = query(sensorDataCollection, orderBy('date'), where('date', '>=', startOfDay), where('date', '<=', endOfDay));
                 const querySnapshot = await getDocs(q);
-                sensorData2 = [];
+
+                sensorDataMoisture1 = [];
+                sensorDataMoisture2 = [];
+
                 querySnapshot.forEach((doc) => {
                     const data = doc.data();
                     const documentDateTime = data.date.toDate();
                     if (documentDateTime.getMinutes() % 30 === 0) {
-                        sensorData2.push(data);
+                        sensorDataMoisture1.push({ date: data.date, moisture: data.moisture });
+                        sensorDataMoisture2.push({ date: data.date, moisture2: data.moisture2 });
                     }
                 });
-                updateCharts2(sensorData2.slice(0, 100));
+
+                updateChartMoisture1(sensorDataMoisture1.slice(0, 100));
+                updateChartMoisture2(sensorDataMoisture2.slice(0, 100));
             } catch (error) {
                 console.error('Error al obtener los datos del sensor de Datos del Suelo:', error);
             }
         }
 
         function loadMoreData2() {
-            const newData = sensorData2.slice(currentIndex2, currentIndex2 + 100);
-            updateCharts2(newData);
+            const newDataMoisture1 = sensorDataMoisture1.slice(currentIndex2, currentIndex2 + 100);
+            const newDataMoisture2 = sensorDataMoisture2.slice(currentIndex2, currentIndex2 + 100);
+            updateChartMoisture1(newDataMoisture1);
+            updateChartMoisture2(newDataMoisture2);
             currentIndex2 += 100;
             toggleLoadMoreButton2();
         }
 
         function toggleLoadMoreButton2() {
             const loadMoreButton = document.getElementById('loadMoreButton2');
-            if (currentIndex2 < sensorData2.length) {
+            if (currentIndex2 < sensorDataMoisture1.length || currentIndex2 < sensorDataMoisture2.length) {
                 loadMoreButton.style.display = 'block';
             } else {
                 loadMoreButton.style.display = 'none';
             }
         }
 
-        function updateCharts2(data) {
+
+        function updateChartMoisture1(data) {
             if (soilHumidityChart) {
                 soilHumidityChart.destroy();
             }
@@ -439,7 +452,62 @@
                 data: {
                     labels: dateLabels,
                     datasets: [{
-                        label: 'Humedad del Suelo (%)',
+                        label: 'Humedad del Suelo 1 (%)',
+                        data: soilHumidityData,
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        zoom: {
+                            pan: {
+                                enabled: true,
+                                mode: 'x',
+                                rangeMin: { x: 0 },
+                                rangeMax: { x: null }
+                            },
+                            zoom: {
+                                wheel: {
+                                    enabled: true,
+                                },
+                                pinch: {
+                                    enabled: true
+                                },
+                                mode: 'x',
+                                rangeMin: { x: 0 },
+                                rangeMax: { x: null }
+                            }
+                        }
+                    }
+                }
+            });
+
+            toggleLoadMoreButton2();
+        }
+
+        function updateChartMoisture2(data) {
+            if (soilHumidityChart2) {
+                soilHumidityChart2.destroy();
+            }
+
+            const dateLabels = data.map(item => item.date.toDate().toLocaleString());
+            const soilHumidityData = data.map(item => item.moisture2);
+
+            const soilHumidityChartCtx = document.getElementById('soilHumidityChart2').getContext('2d');
+
+            soilHumidityChart2 = new Chart(soilHumidityChartCtx, {
+                type: 'line',
+                data: {
+                    labels: dateLabels,
+                    datasets: [{
+                        label: 'Humedad del Suelo 2 (%)',
                         data: soilHumidityData,
                         backgroundColor: 'rgba(75, 192, 192, 0.2)',
                         borderColor: 'rgba(75, 192, 192, 1)',
@@ -670,4 +738,5 @@
         }
     </script>
 </body>
+
 </html>
