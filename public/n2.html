@@ -1506,23 +1506,47 @@
                     .replace(/[\u0300-\u036f]/g, "");
             }
 
+            const forbiddenKeywords = ["ignora", "actuar como", "fingir ser", 'omite', 'omitir', 'texto', 'mensaje', 'mamaguevo', 'mmg', 'mamaguebo', 'hijo de puta'];
+            const normalizedMessage = normalizeText(userMessage);
+            const containsForbiddenKeywords = forbiddenKeywords.some(keyword => normalizedMessage.includes(normalizeText(keyword)));
+
+            if (containsForbiddenKeywords) {
+                alert('Tu mensaje contiene palabras o frases que no están permitidas.');
+                sendMessageButton.style.display = 'inline-block';
+                document.getElementById('loader').style.display = 'none';
+                return;
+            }
+
             const selectedTopics = {
                 "valor de la luz": ["luz", "iluminacion", "valor de la luz", "valor del ph", "ph", "nivel de ph", "valor de ph", "niveles de ph", 'ventilador', 'ventiladores'],
-                "recomendaciones sobre plantas": ["plantas", "recomendaciones de plantas", "consejos para plantas", "recomiendas sobre la planta", 'recomendar sobre la planta', 'recomendacion sobre la planta', 'recomendaciones sobre la planta',
+                "recomendaciones sobre plantas": ["plantas", "recomendaciones de plantas", "consejos para plantas", "recomiendas sobre la planta", 'recomendar sobre la planta',
+                    'recomendacion sobre la planta', 'recomendaciones sobre la planta', 'interpretar datos de los sensores',
                     'cuidado de la planta', 'recomendaciones sobre el cuidado de la planta'],
-                "análisis de datos": ["datos", "analisis de datos", "informacion de datos", "humedad", "temperatura", "ph", "regar", "rega", "dia", "dias", "riego", "agricultura", "cultivo", "invernadero", "mata", "matas"],
+                "análisis de datos": ["datos de sensores", "analisis de datos de sensores", "informacion de datos de sensores", "humedad", "temperatura", "ph", "regar", "rega", "dia", "dias", "riego", "agricultura", 'analiza', 'analizar',
+                    "cultivo", "invernadero", "mata", "matas", "tendencias", "observar", "observas"],
+                    "análizar datos": ["datos de sensores", "analisis de datos de sensores", "informacion de datos de sensores", "humedad", "temperatura", "ph", "regar", "rega", "dia", "dias", "riego", "agricultura", 'analiza', 'analizar',
+                    "cultivo", "invernadero", "mata", "matas"],
                 "significado": ["explicame los valores de los datos", "explica el valor de la luz", "ayuda con agricultura"],
-                "configuración": ["configuracion de riego", "configuracion de la luz", "configura los dias de riego", "eliminar", "elimina", "borra", "borrar", "quita", "quitar", "si", "no", 'gracias', 'acceso'],
-                "fecha y hora": ["fecha de los datos", "hora de los datos", "hora", "fecha", "hola"]
+                "configuración": ["configuracion de riego", "configuracion de la luz", "configura los dias de riego", "eliminar", "elimina", "borra", "borrar", "quita", "quitar",
+                    "si", "no", 'gracias', 'acceso'],
+                "fecha y hora": ["fecha de los datos", "hora de los datos", "hora", "fecha", "hola"],
             };
 
-            const normalizedMessage = normalizeText(userMessage);
             let selectedTopic = '';
             Object.entries(selectedTopics).forEach(([topic, keywords]) => {
+                if (topic === "análisis de datos" || "análizar datos" || "configuración") {
+                    const ignoredKeywords = ["información", "estadísticas", "investigación", "estudio", "filosofía", "vida", "politica", "presidente", "política"];
+                    const historicalKeywords = ["guerra", "historia", "evento", "fecha", "año"];
+                    if (ignoredKeywords.some(keyword => normalizedMessage.includes(normalizeText(keyword))) || historicalKeywords.some(keyword => normalizedMessage.includes(normalizeText(keyword)))) {
+                        return;
+                    }
+                }
                 if (keywords.some(keyword => normalizedMessage.includes(normalizeText(keyword)))) {
                     selectedTopic = topic;
                 }
             });
+
+            console.log("Tema identificado:", selectedTopic);
 
             let botResponse = '';
             if (selectedTopic !== '') {
@@ -1559,7 +1583,6 @@
 
             showChatHistory();
         }
-
 
 
 
